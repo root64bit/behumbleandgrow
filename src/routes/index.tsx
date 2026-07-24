@@ -11,7 +11,7 @@ import EmployerLayout from '../layouts/EmployerLayout';
 
 // Route Guards
 import { ProtectedRoute, RoleGuard } from '../lib/auth/RouteGuards';
-import { OPERATIONS_ROLES, RECRUITER_ROLES, EMPLOYER_ROLES } from '../lib/permissions/rbac';
+import { SUPER_ADMIN_ROLES, OPERATIONS_ROLES, RECRUITER_ROLES, EMPLOYER_ROLES } from '../lib/permissions/rbac';
 
 // Public Pages
 import HomePage from '../pages/public/HomePage';
@@ -51,6 +51,9 @@ import RecruiterPipelinePage from '../pages/recruiter/RecruiterPipelinePage';
 // Employer Pages
 import EmployerDashboardPage from '../pages/employer/EmployerDashboardPage';
 
+// Super Admin Pages
+import SuperAdminDashboardPage from '../pages/superadmin/SuperAdminDashboardPage';
+
 export const router = createBrowserRouter([
   // Public Routes
   {
@@ -79,6 +82,27 @@ export const router = createBrowserRouter([
       { path: 'operations/login', element: <OperationsLoginPage /> },
       { path: 'invite/:token', element: <InviteAcceptancePage /> },
       { path: 'access-denied', element: <AccessDeniedPage /> },
+    ],
+  },
+
+  // Protected Super Admin Routes
+  {
+    path: '/superadmin',
+    element: (
+      <ProtectedRoute requireEmailVerified={false}>
+        <RoleGuard allowedRoles={SUPER_ADMIN_ROLES}>
+          <SuperAdminDashboardPage />
+        </RoleGuard>
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <SuperAdminDashboardPage /> },
+      { path: 'dashboard', element: <SuperAdminDashboardPage /> },
+      { path: 'users', element: <SuperAdminDashboardPage /> },
+      { path: 'organisations', element: <SuperAdminDashboardPage /> },
+      { path: 'finance', element: <SuperAdminDashboardPage /> },
+      { path: 'security', element: <SuperAdminDashboardPage /> },
+      { path: 'settings', element: <SuperAdminDashboardPage /> },
     ],
   },
 

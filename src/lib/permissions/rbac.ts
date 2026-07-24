@@ -1,5 +1,9 @@
 import type { UserRoleName } from '../supabase/types';
 
+export const SUPER_ADMIN_ROLES: UserRoleName[] = [
+  'super_admin'
+];
+
 export const OPERATIONS_ROLES: UserRoleName[] = [
   'operations_admin',
   'operations_manager',
@@ -23,6 +27,10 @@ export const EMPLOYER_ROLES: UserRoleName[] = [
 
 export function hasRole(userRoles: UserRoleName[], targetRoles: UserRoleName[]): boolean {
   return userRoles.some((role) => targetRoles.includes(role));
+}
+
+export function isSuperAdminUser(userRoles: UserRoleName[]): boolean {
+  return hasRole(userRoles, SUPER_ADMIN_ROLES);
 }
 
 export function isOperationsUser(userRoles: UserRoleName[]): boolean {

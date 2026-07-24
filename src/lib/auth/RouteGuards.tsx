@@ -27,6 +27,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
+  // Allow development preview when no Supabase backend session is connected
+  if (!user && import.meta.env.DEV) {
+    return <>{children}</>;
+  }
+
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -61,9 +66,14 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
   allowedRoles,
   fallbackPath = '/',
 }) => {
-  const { userRoles, isLoading } = useAuth();
+  const { userRoles, user, isLoading } = useAuth();
 
   if (isLoading) return null;
+
+  // Allow development preview when no Supabase backend session is connected
+  if (import.meta.env.DEV && (!user || userRoles.length === 0)) {
+    return <>{children}</>;
+  }
 
   const isAuthorized = hasRole(userRoles, allowedRoles);
 
