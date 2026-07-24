@@ -8,6 +8,7 @@ import CandidateLayout from '../layouts/CandidateLayout';
 import OperationsLayout from '../layouts/OperationsLayout';
 import RecruiterLayout from '../layouts/RecruiterLayout';
 import EmployerLayout from '../layouts/EmployerLayout';
+import RecruitmentPartnerLayout from '../layouts/RecruitmentPartnerLayout';
 
 // Route Guards
 import { ProtectedRoute, RoleGuard } from '../lib/auth/RouteGuards';
@@ -45,8 +46,10 @@ import OperationsCandidateDetailPage from '../pages/operations/OperationsCandida
 import OperationsApplicationsPage from '../pages/operations/OperationsApplicationsPage';
 
 // Recruiter Pages
+import RecruiterDashboardPage from '../pages/recruiter/RecruiterDashboardPage';
 import RecruiterLeadsPage from '../pages/recruiter/RecruiterLeadsPage';
 import RecruiterPipelinePage from '../pages/recruiter/RecruiterPipelinePage';
+import RecruiterTeamPage from '../pages/recruiter/RecruiterTeamPage';
 
 // Employer Pages
 import EmployerDashboardPage from '../pages/employer/EmployerDashboardPage';
@@ -106,6 +109,50 @@ export const router = createBrowserRouter([
     ],
   },
 
+  // Protected Recruiter / Partner Routes
+  {
+    path: '/recruiter',
+    element: (
+      <ProtectedRoute requireEmailVerified={false}>
+        <RoleGuard allowedRoles={RECRUITER_ROLES}>
+          <RecruitmentPartnerLayout>
+            <RecruiterDashboardPage />
+          </RecruitmentPartnerLayout>
+        </RoleGuard>
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <RecruiterDashboardPage /> },
+      { path: 'dashboard', element: <RecruiterDashboardPage /> },
+      { path: 'leads', element: <RecruiterLeadsPage /> },
+      { path: 'pipeline', element: <RecruiterPipelinePage /> },
+      { path: 'submissions', element: <RecruiterDashboardPage /> },
+      { path: 'interviews', element: <RecruiterDashboardPage /> },
+      { path: 'offers', element: <RecruiterDashboardPage /> },
+      { path: 'placements', element: <RecruiterDashboardPage /> },
+      { path: 'team', element: <RecruiterTeamPage /> },
+      { path: 'tasks', element: <RecruiterDashboardPage /> },
+      { path: 'compliance', element: <RecruiterDashboardPage /> },
+    ],
+  },
+
+  {
+    path: '/partner',
+    element: (
+      <ProtectedRoute requireEmailVerified={false}>
+        <RoleGuard allowedRoles={RECRUITER_ROLES}>
+          <RecruitmentPartnerLayout>
+            <RecruiterDashboardPage />
+          </RecruitmentPartnerLayout>
+        </RoleGuard>
+      </ProtectedRoute>
+    ),
+    children: [
+      { index: true, element: <RecruiterDashboardPage /> },
+      { path: 'dashboard', element: <RecruiterDashboardPage /> },
+    ],
+  },
+
   // Protected Candidate Routes
   {
     path: '/candidate',
@@ -140,22 +187,6 @@ export const router = createBrowserRouter([
       { path: 'candidates', element: <OperationsCandidatesPage /> },
       { path: 'candidates/:id', element: <OperationsCandidateDetailPage /> },
       { path: 'applications', element: <OperationsApplicationsPage /> },
-    ],
-  },
-
-  // Protected Recruiter Routes
-  {
-    path: '/recruiter',
-    element: (
-      <ProtectedRoute requireEmailVerified={false}>
-        <RoleGuard allowedRoles={RECRUITER_ROLES}>
-          <RecruiterLayout />
-        </RoleGuard>
-      </ProtectedRoute>
-    ),
-    children: [
-      { index: true, element: <RecruiterLeadsPage /> },
-      { path: 'pipeline', element: <RecruiterPipelinePage /> },
     ],
   },
 
