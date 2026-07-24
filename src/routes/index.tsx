@@ -1,5 +1,5 @@
 import React from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Outlet } from 'react-router-dom';
 
 // Layouts
 import PublicLayout from '../layouts/PublicLayout';
@@ -116,7 +116,7 @@ export const router = createBrowserRouter([
       <ProtectedRoute requireEmailVerified={false}>
         <RoleGuard allowedRoles={RECRUITER_ROLES}>
           <RecruitmentPartnerLayout>
-            <RecruiterDashboardPage />
+            <Outlet />
           </RecruitmentPartnerLayout>
         </RoleGuard>
       </ProtectedRoute>
@@ -142,7 +142,7 @@ export const router = createBrowserRouter([
       <ProtectedRoute requireEmailVerified={false}>
         <RoleGuard allowedRoles={RECRUITER_ROLES}>
           <RecruitmentPartnerLayout>
-            <RecruiterDashboardPage />
+            <Outlet />
           </RecruitmentPartnerLayout>
         </RoleGuard>
       </ProtectedRoute>
@@ -159,16 +159,24 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute requireEmailVerified={false}>
         <RoleGuard allowedRoles={['candidate']}>
-          <CandidateLayout />
+          <CandidateLayout>
+            <Outlet />
+          </CandidateLayout>
         </RoleGuard>
       </ProtectedRoute>
     ),
     children: [
       { index: true, element: <CandidateDashboardPage /> },
+      { path: 'dashboard', element: <CandidateDashboardPage /> },
       { path: 'onboarding', element: <CandidateOnboardingPage /> },
       { path: 'profile', element: <CandidateProfilePage /> },
       { path: 'documents', element: <CandidateDocumentsPage /> },
       { path: 'applications', element: <CandidateApplicationsPage /> },
+      { path: 'interviews', element: <CandidateDashboardPage /> },
+      { path: 'offers', element: <CandidateDashboardPage /> },
+      { path: 'placement', element: <CandidateDashboardPage /> },
+      { path: 'support', element: <CandidateDashboardPage /> },
+      { path: 'settings', element: <CandidateDashboardPage /> },
     ],
   },
 
