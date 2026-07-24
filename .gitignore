@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Raw design source assets
+be-humble-grow-website-assets/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
