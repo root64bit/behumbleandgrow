@@ -28,15 +28,15 @@ export default function PublicHeader() {
   }, []);
 
   return (
-    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'glass-header shadow-sm py-3' : 'bg-transparent py-4'}`}>
+    <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'glass-header shadow-md py-3' : 'bg-white/90 backdrop-blur-md border-b border-slate-200/60 py-4'}`}>
       <div className="container flex items-center justify-between">
         
-        {/* Official Logo */}
-        <Link to="/" className="flex items-center gap-2 group text-decoration-none">
+        {/* Prominent High-Visibility Official Logo */}
+        <Link to="/" className="flex items-center gap-3 group text-decoration-none shrink-0 py-1">
           <img 
             src="/assets/be-humble-grow/logo-primary-horizontal.webp" 
             alt="Be Humble & Grow Logo" 
-            className="h-9 md:h-11 w-auto object-contain transition-transform group-hover:scale-105"
+            className="h-11 sm:h-13 md:h-15 lg:h-16 w-auto object-contain transition-transform group-hover:scale-105 drop-shadow-sm"
             onError={(e) => {
               e.currentTarget.src = "/assets/be-humble-grow/logo-primary-horizontal.png";
             }}
@@ -45,11 +45,11 @@ export default function PublicHeader() {
 
         {/* Desktop Navigation Links */}
         <nav className="hidden lg:flex items-center gap-8">
-          <Link to="/jobs" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">Find Opportunities</Link>
-          <Link to="/eligibility" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">Check Eligibility</Link>
-          <Link to="/candidate" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">Candidate Portal</Link>
-          <Link to="/operations" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">Internal Ops</Link>
-          <a href="/#safety" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors flex items-center gap-1">
+          <Link to="/jobs" className="text-sm font-bold text-slate-700 hover:text-emerald-700 transition-colors">Find Opportunities</Link>
+          <Link to="/eligibility" className="text-sm font-bold text-slate-700 hover:text-emerald-700 transition-colors">Check Eligibility</Link>
+          <Link to="/candidate" className="text-sm font-bold text-slate-700 hover:text-emerald-700 transition-colors">Candidate Portal</Link>
+          <Link to="/operations" className="text-sm font-bold text-slate-700 hover:text-emerald-700 transition-colors">Internal Ops</Link>
+          <a href="/#safety" className="text-sm font-bold text-slate-700 hover:text-emerald-700 transition-colors flex items-center gap-1">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
             Safety
           </a>
@@ -62,11 +62,11 @@ export default function PublicHeader() {
             <span>EN</span>
           </button>
 
-          <Link to="/login" className="btn btn-secondary text-sm px-4 py-2">
+          <Link to="/login" className="btn btn-secondary text-sm px-4 py-2 font-bold">
             Log In
           </Link>
 
-          <Link to="/register" className="btn btn-primary text-sm px-4 py-2">
+          <Link to="/register" className="btn btn-primary text-sm px-5 py-2.5 font-bold shadow-md">
             <span>Register Candidate</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
@@ -94,7 +94,7 @@ export default function PublicHeader() {
           <div className="bg-white w-full max-w-md ml-auto h-full p-6 flex flex-col justify-between shadow-2xl overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <img src="/assets/be-humble-grow/logo-primary-horizontal.webp" alt="Be Humble & Grow" className="h-8 w-auto" />
+                <img src="/assets/be-humble-grow/logo-primary-horizontal.webp" alt="Be Humble & Grow" className="h-10 w-auto" />
                 <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">UAE Licensed</span>
               </div>
 
