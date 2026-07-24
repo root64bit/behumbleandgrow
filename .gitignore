@@ -25,3 +25,5 @@ be-humble-grow-website-assets/
 *.njsproj
 *.sln
 *.sw?
+
+.vercel

@@ -1,0 +1,115 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==================================================================
+    // HELPER FUNCTIONS FOR CLAIMS & CONTEXT RESOLUTION
+    // ==================================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function currentOrgId() {
+      return request.auth.token.active_org_id;
+    }
+
+    function hasRole(roleName) {
+      return isAuthenticated() && roleName in request.auth.token.user_roles;
+    }
+
+    function isMFAVerified() {
+      return isAuthenticated() && request.auth.token.mfa_verified == true;
+    }
+
+    function isSuperAdmin() {
+      return hasRole('super_admin');
+    }
+
+    function isInternalOps() {
+      return hasRole('ops_officer') || hasRole('verification_officer') || isSuperAdmin();
+    }
+
+    function isFinanceOfficer() {
+      return (hasRole('finance_officer') || isSuperAdmin()) && isMFAVerified();
+    }
+
+    function isComplianceOfficer() {
+      return (hasRole('compliance_officer') || isSuperAdmin()) && isMFAVerified();
+    }
+
+    // ==================================================================
+    // 1. PROFILES
+    // ==================================================================
+    match /profiles/{userId} {
+      allow read: if isOwner(userId) || isInternalOps();
+      allow update: if isOwner(userId);
+      allow create: if isAuthenticated();
+    }
+
+    // ==================================================================
+    // 2. CANDIDATES & VAULT DOCUMENTS
+    // ==================================================================
+    match /candidates/{candidateId} {
+      allow read: if isOwner(candidateId) || isInternalOps() ||
+        (hasRole('partner_recruiter') && resource.data.organisation_id == currentOrgId());
+      allow create, update: if isOwner(candidateId) || isInternalOps();
+    }
+
+    match /candidate_documents/{docId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.candidate_id ||
+        hasRole('verification_officer') ||
+        isComplianceOfficer()
+      );
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.candidate_id;
+      allow update: if hasRole('verification_officer');
+    }
+
+    // ==================================================================
+    // 3. JOBS & APPLICATIONS
+    // ==================================================================
+    match /jobs/{jobId} {
+      allow read: if resource.data.status == 'published' || 
+        (hasRole('employer_admin') && resource.data.employer_id == currentOrgId());
+      allow create, update: if hasRole('employer_admin') && request.resource.data.employer_id == currentOrgId();
+    }
+
+    match /applications/{applicationId} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == resource.data.candidate_id ||
+        (hasRole('employer_admin') && resource.data.employer_id == currentOrgId()) ||
+        (hasRole('partner_recruiter') && resource.data.partner_id == currentOrgId())
+      );
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.candidate_id;
+      allow update: if isAuthenticated();
+    }
+
+    // ==================================================================
+    // 4. PAYMENTS & REFUNDS (STRICT FINANCIAL SECURITY)
+    // ==================================================================
+    match /payments/{paymentId} {
+      allow read: if isOwner(resource.data.user_id) || isFinanceOfficer();
+      allow create: if isAuthenticated() && request.auth.uid == request.resource.data.user_id;
+      // STRICT DENY: Candidates CANNOT update payment status directly
+      allow update, delete: if false;
+    }
+
+    match /refunds/{refundId} {
+      allow read, create, update: if isFinanceOfficer();
+    }
+
+    // ==================================================================
+    // 5. AUDIT LOGS (APPEND-ONLY IMMUTABLE COLLECTION)
+    // ==================================================================
+    match /audit_logs/{logId} {
+      allow read: if isComplianceOfficer();
+      allow create: if isAuthenticated();
+      // IMMUTABILITY RULE: No update or delete allowed for any role
+      allow update, delete: if false;
+    }
+  }
+}

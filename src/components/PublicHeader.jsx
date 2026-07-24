@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Menu, 
   X, 
@@ -31,26 +32,24 @@ export default function PublicHeader() {
       <div className="container flex items-center justify-between">
         
         {/* Official Logo */}
-        <a href="/" className="flex items-center gap-2 group text-decoration-none">
+        <Link to="/" className="flex items-center gap-2 group text-decoration-none">
           <img 
             src="/assets/be-humble-grow/logo-primary-horizontal.webp" 
             alt="Be Humble & Grow Logo" 
             className="h-9 md:h-11 w-auto object-contain transition-transform group-hover:scale-105"
             onError={(e) => {
-              // Fallback to PNG if webp fails
               e.currentTarget.src = "/assets/be-humble-grow/logo-primary-horizontal.png";
             }}
           />
-        </a>
+        </Link>
 
         {/* Desktop Navigation Links */}
         <nav className="hidden lg:flex items-center gap-8">
-          <a href="#how-it-works" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">How It Works</a>
-          <a href="#opportunities" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">Find Opportunities</a>
-          <a href="#candidates" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">For Candidates</a>
-          <a href="#employers" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">For Employers</a>
-          <a href="#partners" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">Partners</a>
-          <a href="#safety" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors flex items-center gap-1">
+          <Link to="/jobs" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">Find Opportunities</Link>
+          <Link to="/eligibility" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">Check Eligibility</Link>
+          <Link to="/candidate" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">Candidate Portal</Link>
+          <Link to="/operations" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors">Internal Ops</Link>
+          <a href="/#safety" className="text-sm font-semibold text-slate-700 hover:text-emerald-700 transition-colors flex items-center gap-1">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
             Safety
           </a>
@@ -63,21 +62,21 @@ export default function PublicHeader() {
             <span>EN</span>
           </button>
 
-          <a href="#login" className="btn btn-secondary text-sm px-4 py-2">
+          <Link to="/login" className="btn btn-secondary text-sm px-4 py-2">
             Log In
-          </a>
+          </Link>
 
-          <a href="#eligibility" className="btn btn-primary text-sm px-4 py-2">
-            <span>Get Started</span>
+          <Link to="/register" className="btn btn-primary text-sm px-4 py-2">
+            <span>Register Candidate</span>
             <ArrowRight className="w-4 h-4" />
-          </a>
+          </Link>
         </div>
 
         {/* Mobile Actions */}
         <div className="flex lg:hidden items-center gap-3">
-          <a href="#login" className="text-xs font-bold text-slate-700 hover:text-emerald-700 px-2 py-1">
+          <Link to="/login" className="text-xs font-bold text-slate-700 hover:text-emerald-700 px-2 py-1">
             Log In
-          </a>
+          </Link>
 
           <button 
             onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)} 
@@ -100,41 +99,33 @@ export default function PublicHeader() {
               </div>
 
               <div className="flex flex-col space-y-4">
-                <a href="#how-it-works" onClick={() => setMobileDrawerOpen(false)} className="text-base font-semibold text-slate-800 hover:text-emerald-700 py-2 border-b border-slate-50 flex items-center justify-between">
-                  <span>How It Works</span>
-                  <ArrowRight className="w-4 h-4 text-slate-400" />
-                </a>
-                <a href="#opportunities" onClick={() => setMobileDrawerOpen(false)} className="text-base font-semibold text-slate-800 hover:text-emerald-700 py-2 border-b border-slate-50 flex items-center justify-between">
+                <Link to="/jobs" onClick={() => setMobileDrawerOpen(false)} className="text-base font-semibold text-slate-800 hover:text-emerald-700 py-2 border-b border-slate-50 flex items-center justify-between">
                   <span>Find Opportunities</span>
                   <ArrowRight className="w-4 h-4 text-slate-400" />
-                </a>
-                <a href="#candidates" onClick={() => setMobileDrawerOpen(false)} className="text-base font-semibold text-slate-800 hover:text-emerald-700 py-2 border-b border-slate-50 flex items-center justify-between">
-                  <span>For Candidates</span>
+                </Link>
+                <Link to="/eligibility" onClick={() => setMobileDrawerOpen(false)} className="text-base font-semibold text-slate-800 hover:text-emerald-700 py-2 border-b border-slate-50 flex items-center justify-between">
+                  <span>Check Eligibility</span>
+                  <ArrowRight className="w-4 h-4 text-slate-400" />
+                </Link>
+                <Link to="/candidate" onClick={() => setMobileDrawerOpen(false)} className="text-base font-semibold text-slate-800 hover:text-emerald-700 py-2 border-b border-slate-50 flex items-center justify-between">
+                  <span>Candidate Portal</span>
                   <UserRoundCheck className="w-4 h-4 text-slate-400" />
-                </a>
-                <a href="#employers" onClick={() => setMobileDrawerOpen(false)} className="text-base font-semibold text-slate-800 hover:text-emerald-700 py-2 border-b border-slate-50 flex items-center justify-between">
-                  <span>For Employers</span>
+                </Link>
+                <Link to="/operations" onClick={() => setMobileDrawerOpen(false)} className="text-base font-semibold text-slate-800 hover:text-emerald-700 py-2 border-b border-slate-50 flex items-center justify-between">
+                  <span>Internal Ops Console</span>
                   <BriefcaseBusiness className="w-4 h-4 text-slate-400" />
-                </a>
-                <a href="#partners" onClick={() => setMobileDrawerOpen(false)} className="text-base font-semibold text-slate-800 hover:text-emerald-700 py-2 border-b border-slate-50 flex items-center justify-between">
-                  <span>For Recruitment Partners</span>
-                  <UsersRound className="w-4 h-4 text-slate-400" />
-                </a>
-                <a href="#safety" onClick={() => setMobileDrawerOpen(false)} className="text-base font-semibold text-slate-800 hover:text-emerald-700 py-2 border-b border-slate-50 flex items-center justify-between">
-                  <span>Recruitment Safety & Trust</span>
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                </a>
+                </Link>
               </div>
             </div>
 
             <div className="pt-6 border-t border-slate-100 space-y-3">
-              <a href="#eligibility" onClick={() => setMobileDrawerOpen(false)} className="btn btn-primary w-full py-3.5 text-base">
+              <Link to="/eligibility" onClick={() => setMobileDrawerOpen(false)} className="btn btn-primary w-full py-3.5 text-base">
                 <UserRoundCheck className="w-5 h-5" />
                 <span>Check Your Eligibility</span>
-              </a>
-              <a href="#login" onClick={() => setMobileDrawerOpen(false)} className="btn btn-secondary w-full py-3 text-base">
+              </Link>
+              <Link to="/login" onClick={() => setMobileDrawerOpen(false)} className="btn btn-secondary w-full py-3 text-base">
                 Log In
-              </a>
+              </Link>
             </div>
           </div>
         </div>

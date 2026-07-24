@@ -6,19 +6,29 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test": "vitest run",
     "preview": "vite preview",
     "remotion:studio": "remotion studio",
     "remotion:render": "remotion render"
   },
   "devDependencies": {
-    "vite": "^5.4.2"
+    "@types/node": "^26.1.1",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "jsdom": "^27.4.0",
+    "typescript": "^7.0.2",
+    "vite": "^5.4.2",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
     "@remotion/cli": "^4.0.499",
     "@remotion/player": "^4.0.499",
+    "@supabase/supabase-js": "^2.95.3",
     "lucide-react": "^1.26.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "remotion": "^4.0.499"
+    "react-router-dom": "^7.1.3",
+    "remotion": "^4.0.499",
+    "zod": "^3.24.1"
   }
 }
