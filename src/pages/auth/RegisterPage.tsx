@@ -77,18 +77,46 @@ export default function RegisterPage() {
 
       if (error) {
         console.warn('Supabase Auth SignUp Notice:', error.message);
-        if (error.message.includes('rate limit') || error.status === 429) {
-          setErrorMessage('Email rate limit reached (Supabase default is 3 emails/hour for unconfigured SMTP). Please wait a few minutes before trying again.');
-        } else if (error.message.includes('invalid') && error.message.includes('email')) {
-          setErrorMessage('Please enter a valid email address (e.g. name@gmail.com).');
+        if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+          // If already registered, attempt login directly
+          const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (!signInErr && signInData.session) {
+            navigate('/candidate/dashboard');
+            return;
+          } else {
+            setErrorMessage('An account with this email already exists. Please enter your password to log in.');
+            return;
+          }
+        } else if (error.message.includes('rate limit') || error.status === 429) {
+          setErrorMessage('Email rate limit reached. Please use "Instant Test Access" on the login page.');
         } else {
           setErrorMessage(error.message);
         }
         return;
       }
 
-      // Navigate to email verification with email in state
-      navigate('/verify-email', { state: { email } });
+      // If session established immediately or auto-confirmed
+      if (data.session) {
+        navigate('/candidate/dashboard');
+        return;
+      }
+
+      // Otherwise attempt instant auto-login (auto-confirm trigger handles it)
+      const { data: autoLoginData, error: autoLoginError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (!autoLoginError && autoLoginData.session) {
+        navigate('/candidate/dashboard');
+      } else {
+        // Navigate to email verification with email in state as secondary fallback
+        navigate('/verify-email', { state: { email } });
+      }
     } catch (err: any) {
       setErrorMessage(err.message || 'Registration failed. Please try again.');
     } finally {

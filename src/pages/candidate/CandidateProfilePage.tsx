@@ -51,10 +51,10 @@ export default function CandidateProfilePage() {
       setSkills('Hospitality, Customer Service, Team Leadership');
       setLanguages('Portuguese, English');
       setExperiences([
-        { id: 'exp-1', job_title: 'F&B Captain', company_name: 'Maputo Grand Hotel', start_date: '2022-01-01', end_date: null, is_current: true, candidate_id: 'cand-1', created_at: '', updated_at: '', description: '' }
+        { id: 'exp-1', job_title: 'F&B Captain', company_name: 'Maputo Grand Hotel', start_date: '2022-01-01', end_date: null, is_current: true, candidate_id: 'cand-1', created_at: '', description: '' }
       ]);
       setEducations([
-        { id: 'edu-1', degree: 'Diploma in Hospitality', institution: 'Eduardo Mondlane University', field_of_study: 'Hospitality', start_date: '2019-01-01', end_date: '2021-12-01', graduation_year: 2021, is_current: false, candidate_id: 'cand-1', created_at: '', updated_at: '' }
+        { id: 'edu-1', degree: 'Diploma in Hospitality', institution: 'Eduardo Mondlane University', field_of_study: 'Hospitality Management', start_date: '2019-01-01', end_date: '2021-12-01', candidate_id: 'cand-1', created_at: '' }
       ]);
       setLoading(false);
     }
@@ -104,7 +104,6 @@ export default function CandidateProfilePage() {
         is_current: true,
         candidate_id: 'cand-1',
         created_at: '',
-        updated_at: '',
         description: ''
       };
       setExperiences([exp, ...experiences]);
@@ -128,11 +127,8 @@ export default function CandidateProfilePage() {
         field_of_study: newField,
         start_date: '2020-01-01',
         end_date: null,
-        graduation_year: 2021,
-        is_current: false,
         candidate_id: 'cand-1',
-        created_at: '',
-        updated_at: ''
+        created_at: ''
       };
       setEducations([edu, ...educations]);
       setNewInst('');

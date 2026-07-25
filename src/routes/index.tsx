@@ -52,6 +52,11 @@ const CandidateOnboardingPage = lazy(() => import('../pages/candidate/CandidateO
 const CandidateProfilePage = lazy(() => import('../pages/candidate/CandidateProfilePage'));
 const CandidateDocumentsPage = lazy(() => import('../pages/candidate/CandidateDocumentsPage'));
 const CandidateApplicationsPage = lazy(() => import('../pages/candidate/CandidateApplicationsPage'));
+const CandidateInterviewsPage = lazy(() => import('../pages/candidate/CandidateInterviewsPage'));
+const CandidateOffersPage = lazy(() => import('../pages/candidate/CandidateOffersPage'));
+const CandidatePlacementPage = lazy(() => import('../pages/candidate/CandidatePlacementPage'));
+const CandidateSupportPage = lazy(() => import('../pages/candidate/CandidateSupportPage'));
+const CandidateSettingsPage = lazy(() => import('../pages/candidate/CandidateSettingsPage'));
 
 // Operations Pages
 const OperationsDashboardPage = lazy(() => import('../pages/operations/OperationsDashboardPage'));
@@ -188,12 +193,12 @@ export const router = createBrowserRouter([
       { path: 'applications', element: <Lazy component={CandidateApplicationsPage} /> },
       { path: 'jobs', element: <Lazy component={JobsPage} /> },
       { path: 'jobs/:slug', element: <Lazy component={JobDetailPage} /> },
-      { path: 'saved-jobs', element: <Lazy component={CandidateDashboardPage} /> },
-      { path: 'interviews', element: <Lazy component={CandidateDashboardPage} /> },
-      { path: 'offers', element: <Lazy component={CandidateDashboardPage} /> },
-      { path: 'placement', element: <Lazy component={CandidateDashboardPage} /> },
-      { path: 'support', element: <Lazy component={CandidateDashboardPage} /> },
-      { path: 'settings', element: <Lazy component={CandidateDashboardPage} /> },
+      { path: 'saved-jobs', element: <Lazy component={JobsPage} /> },
+      { path: 'interviews', element: <Lazy component={CandidateInterviewsPage} /> },
+      { path: 'offers', element: <Lazy component={CandidateOffersPage} /> },
+      { path: 'placement', element: <Lazy component={CandidatePlacementPage} /> },
+      { path: 'support', element: <Lazy component={CandidateSupportPage} /> },
+      { path: 'settings', element: <Lazy component={CandidateSettingsPage} /> },
     ],
   },
 
