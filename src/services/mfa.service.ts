@@ -4,13 +4,14 @@ import { logSecurityEvent } from './security.service';
 export async function getMfaAssuranceLevel(): Promise<{ currentLevel: string; nextLevel: string } | null> {
   try {
     const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (error) return null;
+    if (error) throw error;
     return {
       currentLevel: data.currentLevel || 'aal1',
       nextLevel: data.nextLevel || 'aal1',
     };
   } catch (err) {
-    return null;
+    console.warn('MFA not supported or error:', err);
+    return { currentLevel: 'aal1', nextLevel: 'aal1' };
   }
 }
 

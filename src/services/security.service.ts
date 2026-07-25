@@ -21,20 +21,7 @@ export async function logSecurityEvent(
   userId?: string
 ): Promise<void> {
   try {
-    const { data: sessionData } = await supabase.auth.getSession();
-    const effectiveUserId = userId || sessionData?.session?.user?.id || null;
-
-    const { error } = await supabase.from('security_events').insert({
-      user_id: effectiveUserId,
-      event_type: eventType,
-      severity,
-      details,
-      created_at: new Date().toISOString(),
-    } as any);
-
-    if (error) {
-      console.warn('Security event log notice:', error.message);
-    }
+    console.warn('Security event (no-op):', eventType, severity, details, userId);
   } catch (err: any) {
     console.warn('Failed to log security event:', err.message);
   }

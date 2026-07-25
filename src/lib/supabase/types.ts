@@ -69,6 +69,7 @@ export interface Profile {
   full_name: string;
   phone?: string | null;
   country_code: string;
+  default_role?: string;
   status: string;
   created_at: string;
   updated_at: string;
@@ -184,14 +185,10 @@ export interface StatusHistory {
 
 export interface UserRoleRecord {
   id: string;
-  user_id: string;
-  role_id: string;
+  profile_id: string;
+  role: string;
   organisation_id?: string | null;
-  scope: string;
   created_at: string;
-  role?: {
-    name: UserRoleName;
-  };
 }
 
 export interface Database {

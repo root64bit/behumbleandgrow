@@ -31,41 +31,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchUserData = async (currentUser: User) => {
     try {
       // Fetch profile
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', currentUser.id)
-        .single();
-      
-      if (prof) setProfile(prof as Profile);
+      try {
+        const { data: prof, error: profErr } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .single();
+        if (profErr) throw profErr;
+        if (prof) setProfile(prof as Profile);
+      } catch (e) {
+        console.warn('Error fetching profile:', e);
+      }
 
       // Fetch candidate if exists
-      const { data: cand } = await supabase
-        .from('candidates')
-        .select('*')
-        .eq('id', currentUser.id)
-        .single();
-      
-      if (cand) setCandidate(cand as Candidate);
+      try {
+        const { data: cand, error: candErr } = await supabase
+          .from('candidates')
+          .select('*')
+          .eq('id', currentUser.id)
+          .single();
+        if (candErr) throw candErr;
+        if (cand) setCandidate(cand as Candidate);
+      } catch (e) {
+        console.warn('Error fetching candidate:', e);
+      }
 
       // Fetch user roles from public.user_roles
-      const { data: rolesData } = await supabase
-        .from('user_roles')
-        .select('role, organisation_id')
-        .eq('profile_id', currentUser.id);
+      try {
+        const { data: rolesData, error: rolesErr } = await supabase
+          .from('user_roles')
+          .select('role, organisation_id')
+          .eq('profile_id', currentUser.id);
+        if (rolesErr) throw rolesErr;
 
-      if (rolesData && rolesData.length > 0) {
-        const rolesList = rolesData
-          .map((r: any) => r.role)
-          .filter(Boolean) as UserRoleName[];
-        
-        setUserRoles(rolesList.length > 0 ? rolesList : ['candidate']);
-        setActiveOrgId(rolesData[0]?.organisation_id || null);
-      } else {
+        if (rolesData && rolesData.length > 0) {
+          const rolesList = rolesData
+            .map((r: any) => r.role)
+            .filter(Boolean) as UserRoleName[];
+          
+          setUserRoles(rolesList.length > 0 ? rolesList : ['candidate']);
+          setActiveOrgId(rolesData[0]?.organisation_id || null);
+        } else {
+          setUserRoles(['candidate']);
+        }
+      } catch (e) {
+        console.warn('Error fetching user roles:', e);
         setUserRoles(['candidate']);
       }
     } catch (err) {
-      console.error('Error fetching auth user metadata:', err);
+      console.error('Error in fetchUserData:', err);
     }
   };
 
