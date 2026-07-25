@@ -78,7 +78,8 @@ export default function CandidateSidebar({
     {
       title: 'Support & Settings',
       items: [
-        { label: 'Support Centre', path: '/candidate/support', icon: LifeBuoy }
+        { label: 'Support Centre', path: '/candidate/support', icon: LifeBuoy },
+        { label: 'Settings', path: '/candidate/settings', icon: Settings }
       ]
     }
   ];

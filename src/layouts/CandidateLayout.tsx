@@ -14,7 +14,7 @@ export default function CandidateLayout({ children }: CandidateLayoutProps) {
   const [notificationDrawerOpen, setNotificationDrawerOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans antialiased flex text-left pb-16 lg:pb-0">
+    <div className="min-h-screen bg-[#FAF9FC] dark:bg-slate-950 font-sans antialiased flex text-left pb-20 lg:pb-0">
       {/* Sidebar Navigation */}
       <CandidateSidebar
         collapsed={sidebarCollapsed}
@@ -36,7 +36,7 @@ export default function CandidateLayout({ children }: CandidateLayoutProps) {
         />
 
         {/* Page Body Container */}
-        <main className="flex-1 p-4 sm:p-6 md:p-8 space-y-8 max-w-[1600px] w-full mx-auto">
+        <main className="flex-1 p-4 sm:p-6 md:p-8 space-y-8 max-w-[1440px] w-full mx-auto">
           {children}
         </main>
       </div>

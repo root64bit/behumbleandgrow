@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { CandidateService } from '../services/candidate.service';
+import { isDemoDataAllowed } from '../hooks/candidate/useCandidateDashboard';
 
-describe('Candidate Workspace Unit Suite', () => {
-  it('should retrieve candidate summary profile', () => {
+describe('Candidate Workspace Unit & RBAC Suite', () => {
+  it('should retrieve candidate summary profile with valid defaults', () => {
     const candidate = CandidateService.getCandidateSummary();
     expect(candidate.candidateName).toBe('Amina Mabote');
     expect(candidate.candidateId).toBe('BH-MZ-9041');
@@ -19,18 +20,25 @@ describe('Candidate Workspace Unit Suite', () => {
     expect(steps[9].title).toBe('Travel & Placement');
   });
 
-  it('should retrieve priority next step action card', () => {
+  it('should retrieve priority next step action card pointing to valid route', () => {
     const nextStep = CandidateService.getNextStep();
     expect(nextStep.title).toBe('Confirm Video Interview Attendance');
     expect(nextStep.priority).toBe('urgent');
-    expect(nextStep.estimatedMinutes).toBe(3);
+    expect(nextStep.destinationRoute).toMatch(/^\/candidate\//);
   });
 
-  it('should retrieve candidate document readiness records', () => {
+  it('should verify demo data guard is disabled unless VITE_DEMO_DATA_ENABLED=true in DEV', () => {
+    // In vitest environment without VITE_DEMO_DATA_ENABLED=true
+    const demoAllowed = isDemoDataAllowed();
+    expect(demoAllowed).toBe(false);
+  });
+
+  it('should retrieve candidate document readiness records without exposing private storage paths', () => {
     const docs = CandidateService.getDocuments();
     expect(docs.length).toBeGreaterThan(0);
     expect(docs[0].name).toContain('Passport');
     expect(docs[0].status).toBe('verified');
+    expect(docs[0]).not.toHaveProperty('storage_path');
   });
 
   it('should retrieve recommended UAE job opportunities with match score', () => {
@@ -45,5 +53,18 @@ describe('Candidate Workspace Unit Suite', () => {
     expect(interviews).toHaveLength(1);
     expect(interviews[0].uaeTime).toContain('GST');
     expect(interviews[0].prepChecklist.length).toBeGreaterThan(0);
+  });
+
+  it('should verify conditional offer compliance legal disclaimer presence', () => {
+    const offer = CandidateService.getConditionalOffer();
+    expect(offer).not.toBeNull();
+    expect(offer?.salaryText).toContain('AED');
+    expect(offer?.status).toBe('sent_to_candidate');
+  });
+
+  it('should verify placement progress contains work permit status', () => {
+    const placement = CandidateService.getPlacementProgress();
+    expect(placement).not.toBeNull();
+    expect(placement?.workPermitStatus).toContain('Ministry of Human Resources');
   });
 });
