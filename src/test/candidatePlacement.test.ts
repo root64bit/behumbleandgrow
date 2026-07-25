@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { CandidatePlacementService } from '../services/candidate-placement.service';
 import { maskWorkPermitReference, maskVisaReference, maskPassportNumber } from '../lib/candidate/placementReferenceMasking';
 
-vi.mock('../lib/supabase', () => ({
+vi.mock('../lib/supabase/client', () => ({
   supabase: {
     auth: {
       getUser: vi.fn(),
@@ -23,7 +23,7 @@ describe('Candidate Placement Security & Service Tests', () => {
   });
 
   it('throws authentication error if user session is absent', async () => {
-    const { supabase } = await import('../lib/supabase');
+    const { supabase } = await import('../lib/supabase/client');
     (supabase.auth.getUser as any).mockResolvedValueOnce({ data: { user: null }, error: null });
 
     await expect(CandidatePlacementService.loadMyPlacement()).rejects.toThrow(

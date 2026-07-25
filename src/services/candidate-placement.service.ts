@@ -1,8 +1,17 @@
-import { supabase } from '../lib/supabase';
-import { resolveCandidateEmployerDisplay } from './candidate-application-details.service';
+import { supabase } from '../lib/supabase/client';
 import { PlacementRoadmapStage, CANONICAL_ROADMAP_STAGES } from '../lib/candidate/placementRoadmap';
 import { PlacementTimelineEvent } from '../lib/candidate/placementTimeline';
 import { PlacementCandidateAction } from '../lib/candidate/placementNextAction';
+
+export function resolveCandidateEmployerDisplay(params: {
+  employerDisclosureAuthorised: boolean;
+  employerDisplayName?: string | null;
+}): string {
+  if (!params.employerDisclosureAuthorised) {
+    return 'Approved UAE Employer';
+  }
+  return params.employerDisplayName || 'Approved UAE Employer';
+}
 
 export interface CandidatePlacement {
   id: string;

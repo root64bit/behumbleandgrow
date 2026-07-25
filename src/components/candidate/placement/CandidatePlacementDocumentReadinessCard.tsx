@@ -1,5 +1,5 @@
 import React from 'react';
-import { FolderShared, CheckCircle2, ArrowRight, FileBadge, School } from 'lucide-react';
+import { FolderCheck, CheckCircle2, ArrowRight, FileBadge, School } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const CandidatePlacementDocumentReadinessCard: React.FC = () => {
@@ -7,7 +7,7 @@ export const CandidatePlacementDocumentReadinessCard: React.FC = () => {
     <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4 text-left">
       <div className="flex justify-between items-center border-b border-slate-100 pb-3">
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center space-x-2">
-          <FolderShared className="w-4 h-4 text-emerald-600" />
+          <FolderCheck className="w-4 h-4 text-emerald-600" />
           <span>Candidate Placement Documents</span>
         </h3>
         <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
