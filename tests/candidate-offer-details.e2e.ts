@@ -54,48 +54,50 @@ test.describe('Be Humble & Grow — Candidate Offer Details & Decision E2E Suite
 
     await page.route('**/rest/v1/offers*', async (route) => {
       const url = route.request().url();
+      const acceptHeader = route.request().headers()['accept'] || '';
+
       if (url.includes('unowned-offer-999')) {
         await route.fulfill({
-          status: 200,
+          status: 406,
           contentType: 'application/json',
-          body: JSON.stringify([]),
+          body: JSON.stringify({ code: 'PGRST116', details: 'The result contains 0 rows', message: 'JSON object requested, multiple (or no) rows returned' }),
         });
         return;
       }
 
+      const offerObj = {
+        id: 'ofr-101',
+        application_id: 'app-101',
+        employer_id: 'emp-1',
+        salary: 4500,
+        currency: 'AED',
+        status: 'sent_to_candidate',
+        valid_until: '2026-08-05T23:59:59Z',
+        created_at: '2026-07-20T10:00:00Z',
+        updated_at: '2026-07-20T10:00:00Z',
+        employers: {
+          id: 'emp-1',
+          name: 'Horizon Gulf Services LLC',
+        },
+        applications: {
+          id: 'app-101',
+          candidate_id: 'cand-user-1',
+          stage: 'offer_issued',
+          status: 'offer_issued',
+          employer_disclosure_status: 'disclosed',
+          employer_disclosed_at: '2026-07-20T10:00:00Z',
+          jobs: {
+            id: 'job-1',
+            title: 'Customer Service Representative',
+            location: 'Dubai, UAE',
+          },
+        },
+      };
+
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([
-          {
-            id: 'ofr-101',
-            application_id: 'app-101',
-            employer_id: 'emp-1',
-            salary: 4500,
-            currency: 'AED',
-            status: 'sent_to_candidate',
-            valid_until: '2026-08-05T23:59:59Z',
-            created_at: '2026-07-20T10:00:00Z',
-            updated_at: '2026-07-20T10:00:00Z',
-            employers: {
-              id: 'emp-1',
-              name: 'Horizon Gulf Services LLC',
-            },
-            applications: {
-              id: 'app-101',
-              candidate_id: 'cand-user-1',
-              stage: 'offer_issued',
-              status: 'offer_issued',
-              employer_disclosure_status: 'disclosed',
-              employer_disclosed_at: '2026-07-20T10:00:00Z',
-              jobs: {
-                id: 'job-1',
-                title: 'Customer Service Representative',
-                location: 'Dubai, UAE',
-              },
-            },
-          },
-        ]),
+        body: acceptHeader.includes('vnd.pgrst.object') ? JSON.stringify(offerObj) : JSON.stringify([offerObj]),
       });
     });
 
