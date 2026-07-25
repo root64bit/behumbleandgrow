@@ -10,6 +10,7 @@ import {
   CandidateConditionalOffer,
   CandidatePlacementProgress
 } from '../types/candidate';
+import type { WorkExperience, Education } from '../lib/supabase/types';
 
 export class CandidateService {
 
@@ -169,20 +170,43 @@ export class CandidateService {
 // Exported standalone functions for compatibility with CandidateProfilePage & CandidateDocumentsPage
 export async function getCandidateProfile(userId?: string) {
   const summary = CandidateService.getCandidateSummary();
+  const workExp: WorkExperience[] = [
+    { 
+      id: 'exp-1', 
+      candidate_id: summary.id, 
+      job_title: summary.profession, 
+      company_name: 'Maputo Grand Hotel', 
+      start_date: '2022-01-01', 
+      end_date: null, 
+      is_current: true,
+      created_at: new Date().toISOString()
+    }
+  ];
+  const edu: Education[] = [
+    { 
+      id: 'edu-1', 
+      candidate_id: summary.id, 
+      degree: 'Diploma in Hospitality', 
+      institution: 'Eduardo Mondlane University', 
+      field_of_study: 'Hospitality Management',
+      start_date: '2019-01-01',
+      created_at: new Date().toISOString() 
+    }
+  ];
+
   return {
     id: summary.id,
     user_id: userId || 'user-1',
-    full_name: summary.candidateName,
-    nationality: summary.country,
-    candidate_reference: summary.candidateId,
-    completion_percentage: summary.profileCompletionPercent,
-    status: summary.eligibilityStatus,
-    work_experiences: [
-      { id: 'exp-1', job_title: summary.profession, company_name: 'Maputo Grand Hotel', start_date: '2022-01-01', end_date: null, is_current: true }
-    ],
-    education_records: [
-      { id: 'edu-1', degree: 'Diploma in Hospitality', institution: 'Eduardo Mondlane University', graduation_year: 2021 }
-    ]
+    profile: { full_name: summary.candidateName },
+    candidate: {
+      headline: summary.profession,
+      bio: 'Experienced hospitality and customer relations lead.',
+      current_location: 'Maputo, Mozambique',
+      skills: ['Hospitality', 'Customer Service', 'Team Leadership'],
+      languages: ['Portuguese', 'English'],
+    },
+    experiences: workExp,
+    educations: edu,
   };
 }
 
@@ -190,12 +214,28 @@ export async function updateCandidateProfile(userId: string, data: any) {
   return { success: true };
 }
 
-export async function addWorkExperience(profileId: string, data: any) {
-  return { id: 'exp-new', ...data };
+export async function addWorkExperience(profileId: string, data: any): Promise<WorkExperience> {
+  return { 
+    id: `exp-${Date.now()}`, 
+    candidate_id: profileId,
+    company_name: data.company_name,
+    job_title: data.job_title,
+    start_date: data.start_date,
+    is_current: data.is_current || false,
+    created_at: new Date().toISOString()
+  };
 }
 
-export async function addEducation(profileId: string, data: any) {
-  return { id: 'edu-new', ...data };
+export async function addEducation(profileId: string, data: any): Promise<Education> {
+  return { 
+    id: `edu-${Date.now()}`, 
+    candidate_id: profileId,
+    institution: data.institution,
+    degree: data.degree,
+    field_of_study: data.field_of_study,
+    start_date: data.start_date,
+    created_at: new Date().toISOString()
+  };
 }
 
 export async function getCandidateDocuments(userId?: string) {

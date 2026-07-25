@@ -2,13 +2,13 @@
 // Firebase SDK Initialization & Configuration for Be Humble & Grow Platform
 
 export const FIREBASE_CONFIG = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY || "AIzaSyDvXvvPIfNZTZj0d-5-Q07FBAakvwqxCFw",
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN || "behumbleandgrow.firebaseapp.com",
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID || "behumbleandgrow",
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET || "behumbleandgrow.firebasestorage.app",
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "763967463806",
-  appId: process.env.VITE_FIREBASE_APP_ID || "1:763967463806:web:cb61766521c08beec4d32f",
-  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID || "G-B8TRK0T3E2"
+  apiKey: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_API_KEY) || "",
+  authDomain: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_AUTH_DOMAIN) || "",
+  projectId: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_PROJECT_ID) || "",
+  storageBucket: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_STORAGE_BUCKET) || "",
+  messagingSenderId: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID) || "",
+  appId: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_APP_ID) || "",
+  measurementId: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_FIREBASE_MEASUREMENT_ID) || ""
 };
 
 /**

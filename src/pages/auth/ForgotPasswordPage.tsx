@@ -1,22 +1,40 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, KeyRound, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-react';
+import { Mail, KeyRound, ArrowLeft, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthInput from '../../components/auth/AuthInput';
+import { supabase } from '../../lib/supabase/client';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage('');
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const redirectUrl = `${window.location.origin}/reset-password`;
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: redirectUrl,
+      });
+
+      if (error) {
+        console.warn('Supabase Password Reset Error:', error.message);
+        setErrorMessage(error.message);
+        return;
+      }
+
       setIsSubmitted(true);
-    }, 1000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to send reset email. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -38,6 +56,13 @@ export default function ForgotPasswordPage() {
               Enter the email address associated with your candidate, partner or employer account and we’ll send you a secure reset link.
             </p>
           </div>
+
+          {errorMessage && (
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-medium text-left flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <AuthInput
@@ -92,7 +117,8 @@ export default function ForgotPasswordPage() {
 
           <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
             <p className="font-semibold text-slate-800">Didn't receive the email?</p>
-            <p>Check your spam or junk folder, or wait a few minutes before trying again.</p>
+            <p>1. Check your Spam or Junk folder for an email from Supabase / Be Humble & Grow.</p>
+            <p>2. Default Supabase SMTP limit is 3 emails/hour. Check your Supabase Dashboard SMTP settings if testing repeatedly.</p>
           </div>
 
           <div className="pt-2 flex flex-col gap-2">

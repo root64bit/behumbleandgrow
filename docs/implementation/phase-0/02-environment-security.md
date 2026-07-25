@@ -4,13 +4,18 @@
 
 | Environment Variable | Public / Secret | Classification | Purpose & Scope |
 | :--- | :--- | :--- | :--- |
-| `VITE_SUPABASE_URL` | Public Configuration | Production-Required | Public API endpoint for browser client |
-| `VITE_SUPABASE_ANON_KEY` | Public Configuration | Production-Required | Anonymous client JWT key (RLS-restricted) |
-| `VITE_APPLICATION_FEE_ENABLED` | Public Configuration | Development/Staging | Feature flag (Set to `false` in Phase 0) |
-| `VITE_FIREBASE_API_KEY` | Public Configuration | Development-Only | Legacy Firebase web key |
-| `VITE_FIREBASE_PROJECT_ID` | Public Configuration | Development-Only | Legacy Firebase project identifier |
+| `VITE_FIREBASE_API_KEY` | Public Client Config | Production Required | Firebase Client API Key (`AIzaSyDvX...`) |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Public Client Config | Production Required | Firebase Auth domain (`behumbleandgrow.firebaseapp.com`) |
+| `VITE_FIREBASE_PROJECT_ID` | Public Client Config | Production Required | Firebase Project ID (`behumbleandgrow`) |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Public Client Config | Production Required | Firebase Storage bucket (`behumbleandgrow.firebasestorage.app`) |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Public Client Config | Production Required | Messaging Sender ID (`763967463806`) |
+| `VITE_FIREBASE_APP_ID` | Public Client Config | Production Required | Firebase Web App ID |
+| `VITE_FIREBASE_MEASUREMENT_ID` | Public Client Config | Production Required | Google Analytics measurement ID |
+| `VITE_SUPABASE_URL` | Public Configuration | Optional / Secondary | Supabase project API URL |
+| `VITE_SUPABASE_ANON_KEY` | Public Configuration | Optional / Secondary | Supabase public anonymous key |
+| `VITE_APPLICATION_FEE_ENABLED` | Public Configuration | Staging / Development | Feature flag (Set to `false` in Phase 0) |
 
-## Security Controls Enforced
-- `.env.example` committed with no real credentials.
-- HTTP Security Headers added to `vercel.json` (`Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`).
-- Service-role keys, database passwords, and payment provider keys are prohibited from frontend code bundles.
+## Database Security Rules
+- **Firebase Firestore Security Rules**: Defined in `firestore.rules` for collections `profiles`, `candidates`, `candidate_documents`, `jobs`, `applications`, `payments`, `refunds`, `audit_logs`.
+- **Firebase Storage Rules**: Defined in `storage.rules` protecting private document vaults (`candidate-cv`, `candidate-identity`, `candidate-certificates`).
+- **Supabase RLS Policies**: Defined in `20260724000002_rls_policies.sql`.

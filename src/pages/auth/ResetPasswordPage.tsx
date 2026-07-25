@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { KeyRound, CheckCircle2, Loader2, ArrowRight } from 'lucide-react';
+import { KeyRound, CheckCircle2, Loader2, ArrowRight, AlertCircle } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
 import PasswordInput from '../../components/auth/PasswordInput';
 import PasswordStrength from '../../components/auth/PasswordStrength';
+import { supabase } from '../../lib/supabase/client';
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export default function ResetPasswordPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -30,10 +31,22 @@ export default function ResetPasswordPage() {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
       setIsSuccess(true);
-    }, 1000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to update password. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -57,8 +70,9 @@ export default function ResetPasswordPage() {
           </div>
 
           {errorMessage && (
-            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium text-left">
-              {errorMessage}
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-medium text-left flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{errorMessage}</span>
             </div>
           )}
 

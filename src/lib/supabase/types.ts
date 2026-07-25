@@ -48,6 +48,7 @@ export type DocClassification =
 
 export type UserRoleName =
   | 'candidate'
+  | 'super_admin'
   | 'operations_admin'
   | 'operations_manager'
   | 'candidate_reviewer'

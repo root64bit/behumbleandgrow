@@ -5,8 +5,8 @@
  * Creates client configuration with PKCE auth flow and secure token persistence
  */
 export const SUPABASE_CONFIG = {
-  url: process.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co',
-  anonKey: process.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key',
+  url: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SUPABASE_URL) || '',
+  anonKey: (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_SUPABASE_ANON_KEY) || '',
   options: {
     auth: {
       autoRefreshToken: true,

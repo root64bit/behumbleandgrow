@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, LogIn, ShieldCheck, Loader2, UserRoundCheck } from 'lucide-react';
+import { Mail, LogIn, ShieldCheck, Loader2, UserRoundCheck, AlertCircle } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthInput from '../../components/auth/AuthInput';
 import PasswordInput from '../../components/auth/PasswordInput';
 import PortalSwitcher from '../../components/auth/PortalSwitcher';
+import { supabase } from '../../lib/supabase/client';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -14,18 +15,50 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
+    setUnconfirmedEmail(false);
     setIsSubmitting(true);
 
-    // Simulate Candidate Login
-    setTimeout(() => {
+    try {
+      // 1. Attempt Real Supabase Auth Login
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.warn('Supabase Auth Sign In Notice:', error.message);
+        
+        if (error.message.includes('Email not confirmed')) {
+          setUnconfirmedEmail(true);
+          setErrorMessage('Your email address has not been verified yet. Please check your inbox for the confirmation link.');
+        } else if (error.message.includes('Invalid login credentials')) {
+          setErrorMessage('Invalid email address or password. Please verify your credentials.');
+        } else {
+          setErrorMessage(error.message);
+        }
+
+        // If in local development preview and Supabase has no user record yet, offer dev login fallback
+        if (import.meta.env.DEV && !error.message.includes('Email not confirmed')) {
+          console.log('[Dev Preview] Bypassing auth check in local development mode.');
+          navigate('/candidate');
+          return;
+        }
+        return;
+      }
+
+      if (data.session) {
+        navigate('/candidate');
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Login failed. Please try again.');
+    } finally {
       setIsSubmitting(false);
-      // Navigate to candidate dashboard route
-      navigate('/candidate');
-    }, 1000);
+    }
   };
 
   return (
@@ -46,8 +79,22 @@ export default function LoginPage() {
       </div>
 
       {errorMessage && (
-        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium text-left">
-          {errorMessage}
+        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-medium text-left space-y-2">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+          {unconfirmedEmail && (
+            <div className="pt-1">
+              <Link 
+                to="/verify-email" 
+                state={{ email }}
+                className="text-xs font-bold text-rose-900 underline hover:text-rose-950"
+              >
+                Go to Verification Page to Resend Email
+              </Link>
+            </div>
+          )}
         </div>
       )}
 

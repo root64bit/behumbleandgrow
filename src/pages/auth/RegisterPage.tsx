@@ -7,6 +7,7 @@ import PasswordInput from '../../components/auth/PasswordInput';
 import PhoneCountryInput from '../../components/auth/PhoneCountryInput';
 import PasswordStrength from '../../components/auth/PasswordStrength';
 import ConsentGroup from '../../components/auth/ConsentGroup';
+import { supabase } from '../../lib/supabase/client';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -34,7 +35,7 @@ export default function RegisterPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
@@ -55,12 +56,48 @@ export default function RegisterPage() {
 
     setIsSubmitting(true);
 
-    // Simulate API registration submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // Execute Real Supabase Auth SignUp
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            phone: `${countryCode}${phone}`,
+            nationality,
+            residence,
+            role: 'candidate',
+          },
+        },
+      });
+
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
+
+      // Automatically seed profile table in PostgreSQL if session or user created
+      if (data.user) {
+        await supabase.from('profiles').upsert({
+          id: data.user.id,
+          full_name: fullName,
+          email,
+          phone: `${countryCode}${phone}`,
+          nationality,
+          residence,
+          status: 'active',
+          updated_at: new Date().toISOString(),
+        });
+      }
+
       // Navigate to email verification with state
       navigate('/verify-email', { state: { email } });
-    }, 1200);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
