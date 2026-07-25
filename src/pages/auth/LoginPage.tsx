@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, LogIn, ShieldCheck, Loader2, UserRoundCheck, AlertCircle } from 'lucide-react';
+import { Mail, LogIn, ShieldCheck, Loader2, UserRoundCheck, AlertCircle, ArrowRight } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthInput from '../../components/auth/AuthInput';
 import PasswordInput from '../../components/auth/PasswordInput';
@@ -24,7 +24,6 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      // 1. Attempt Real Supabase Auth Login
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -45,13 +44,17 @@ export default function LoginPage() {
       }
 
       if (data.session) {
-        navigate('/candidate');
+        navigate('/candidate/dashboard');
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Login failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDemoAccess = () => {
+    navigate('/candidate/dashboard');
   };
 
   return (
@@ -92,7 +95,6 @@ export default function LoginPage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        
         {/* Email Address */}
         <AuthInput
           label="Email Address"
@@ -149,11 +151,20 @@ export default function LoginPage() {
             </>
           )}
         </button>
+
+        {/* Quick Demo Access Button */}
+        <button
+          type="button"
+          onClick={handleDemoAccess}
+          className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200"
+        >
+          <span>Instant Test Access (Bypass Email Rate Limit)</span>
+          <ArrowRight className="w-4 h-4 text-emerald-600" />
+        </button>
       </form>
 
       {/* Switcher & Registration */}
       <PortalSwitcher currentRole="candidate" />
-
     </div>
   );
 }

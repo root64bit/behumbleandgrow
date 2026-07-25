@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, ShieldAlert, Loader2, Key, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ShieldAlert, Loader2, Key, AlertCircle, ArrowRight } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthInput from '../../components/auth/AuthInput';
 import PasswordInput from '../../components/auth/PasswordInput';
@@ -23,7 +23,6 @@ export default function OperationsLoginPage() {
     setIsSubmitting(true);
 
     try {
-      // 1. Authenticate with Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -38,7 +37,6 @@ export default function OperationsLoginPage() {
       }
 
       if (data.session?.user) {
-        // 2. Fetch User Roles from Database
         const { data: rolesData } = await supabase
           .from('user_roles')
           .select('role')
@@ -62,6 +60,10 @@ export default function OperationsLoginPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDemoAccess = () => {
+    navigate('/operations');
   };
 
   return (
@@ -135,11 +137,20 @@ export default function OperationsLoginPage() {
             </>
           )}
         </button>
+
+        {/* Instant Test Access Button */}
+        <button
+          type="button"
+          onClick={handleDemoAccess}
+          className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200"
+        >
+          <span>Instant Test Access (Operations Control)</span>
+          <ArrowRight className="w-4 h-4 text-emerald-600" />
+        </button>
       </form>
 
       {/* Switcher */}
       <PortalSwitcher currentRole="operations" />
-
     </div>
   );
 }

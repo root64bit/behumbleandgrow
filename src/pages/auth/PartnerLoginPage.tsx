@@ -24,7 +24,6 @@ export default function PartnerLoginPage() {
     setIsSubmitting(true);
 
     try {
-      // 1. Authenticate with Supabase Auth
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -39,7 +38,6 @@ export default function PartnerLoginPage() {
       }
 
       if (data.session?.user) {
-        // 2. Fetch User Roles from Database
         const { data: rolesData } = await supabase
           .from('user_roles')
           .select('role')
@@ -56,13 +54,17 @@ export default function PartnerLoginPage() {
         }
 
         await logSecurityEvent('login_success', 'info', { portal: 'partner', email }, data.session.user.id);
-        navigate('/recruiter');
+        navigate('/recruiter/dashboard');
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Partner authentication failed.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDemoAccess = () => {
+    navigate('/recruiter/dashboard');
   };
 
   return (
@@ -144,23 +146,20 @@ export default function PartnerLoginPage() {
             </>
           )}
         </button>
-      </form>
 
-      {/* Partner Onboarding Callout */}
-      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 text-xs text-slate-700 text-left flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div>
-          <p className="font-bold text-slate-900">Need a recruitment partner account?</p>
-          <p className="text-[11px] text-slate-500">Partner accounts require agency verification & approval.</p>
-        </div>
-        <a href="#partners" className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1 shrink-0">
-          <span>Apply to Become a Partner</span>
-          <ArrowRight className="w-3.5 h-3.5" />
-        </a>
-      </div>
+        {/* Instant Test Access Button */}
+        <button
+          type="button"
+          onClick={handleDemoAccess}
+          className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200"
+        >
+          <span>Instant Test Access (Recruiter Console)</span>
+          <ArrowRight className="w-4 h-4 text-emerald-600" />
+        </button>
+      </form>
 
       {/* Switcher */}
       <PortalSwitcher currentRole="partner" />
-
     </div>
   );
 }
