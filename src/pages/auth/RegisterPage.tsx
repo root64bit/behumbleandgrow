@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { UserRoundCheck, ShieldCheck, Mail, User, Globe, ArrowRight, Loader2 } from 'lucide-react';
+import { UserRoundCheck, ShieldCheck, Mail, User, Globe, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthInput from '../../components/auth/AuthInput';
 import PasswordInput from '../../components/auth/PasswordInput';
@@ -76,23 +76,18 @@ export default function RegisterPage() {
       });
 
       if (error) {
-        setErrorMessage(error.message);
+        console.warn('Supabase Auth SignUp Notice:', error.message);
+        if (error.message.includes('rate limit') || error.status === 429) {
+          setErrorMessage('Email rate limit reached (Supabase default is 3 emails/hour for unconfigured SMTP). Please wait a few minutes before trying again.');
+        } else if (error.message.includes('invalid') && error.message.includes('email')) {
+          setErrorMessage('Please enter a valid email address (e.g. name@gmail.com).');
+        } else {
+          setErrorMessage(error.message);
+        }
         return;
       }
 
-      // Automatically seed profile table in PostgreSQL if session or user created
-      if (data.user) {
-        await supabase.from('profiles').upsert({
-          id: data.user.id,
-          full_name: fullName,
-          email,
-          phone: `${countryCode}${phone}`,
-          status: 'active',
-          updated_at: new Date().toISOString(),
-        });
-      }
-
-      // Navigate to email verification with state
+      // Navigate to email verification with email in state
       navigate('/verify-email', { state: { email } });
     } catch (err: any) {
       setErrorMessage(err.message || 'Registration failed. Please try again.');
@@ -119,8 +114,9 @@ export default function RegisterPage() {
       </div>
 
       {errorMessage && (
-        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 font-medium text-left">
-          {errorMessage}
+        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-medium text-left flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
