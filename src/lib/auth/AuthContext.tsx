@@ -48,15 +48,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (cand) setCandidate(cand as Candidate);
 
-      // Fetch user roles
+      // Fetch user roles from public.user_roles
       const { data: rolesData } = await supabase
         .from('user_roles')
-        .select('role_id, organisation_id, roles(name)')
-        .eq('user_id', currentUser.id);
+        .select('role, organisation_id')
+        .eq('profile_id', currentUser.id);
 
       if (rolesData && rolesData.length > 0) {
         const rolesList = rolesData
-          .map((r: any) => r.roles?.name)
+          .map((r: any) => r.role)
           .filter(Boolean) as UserRoleName[];
         
         setUserRoles(rolesList.length > 0 ? rolesList : ['candidate']);

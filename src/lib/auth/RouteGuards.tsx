@@ -27,11 +27,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Allow development preview when no Supabase backend session is connected
-  if (!user && import.meta.env.DEV) {
-    return <>{children}</>;
-  }
-
+  // Enforce strict authentication requirement (No DEV bypasses permitted)
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
@@ -64,16 +60,11 @@ interface RoleGuardProps {
 export const RoleGuard: React.FC<RoleGuardProps> = ({
   children,
   allowedRoles,
-  fallbackPath = '/',
+  fallbackPath = '/access-denied',
 }) => {
-  const { userRoles, user, isLoading } = useAuth();
+  const { userRoles, isLoading } = useAuth();
 
   if (isLoading) return null;
-
-  // Allow development preview when no Supabase backend session is connected
-  if (import.meta.env.DEV && (!user || userRoles.length === 0)) {
-    return <>{children}</>;
-  }
 
   const isAuthorized = hasRole(userRoles, allowedRoles);
 

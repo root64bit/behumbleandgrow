@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, ShieldAlert, Loader2, Key } from 'lucide-react';
+import { Mail, Lock, ShieldAlert, Loader2, Key, AlertCircle } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthInput from '../../components/auth/AuthInput';
 import PasswordInput from '../../components/auth/PasswordInput';
 import PortalSwitcher from '../../components/auth/PortalSwitcher';
+import { supabase } from '../../lib/supabase/client';
+import { OPERATIONS_ROLES, SUPER_ADMIN_ROLES, hasRole } from '../../lib/permissions/rbac';
+import { logSecurityEvent } from '../../services/security.service';
 
 export default function OperationsLoginPage() {
   const navigate = useNavigate();
@@ -12,15 +15,53 @@ export default function OperationsLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage('');
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      // 1. Authenticate with Supabase Auth
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        await logSecurityEvent('login_failed', 'warning', { portal: 'operations', email, reason: error.message });
+        setErrorMessage(error.message.includes('Invalid login credentials') 
+          ? 'Invalid operations credentials. Access denied.' 
+          : error.message);
+        return;
+      }
+
+      if (data.session?.user) {
+        // 2. Fetch User Roles from Database
+        const { data: rolesData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('profile_id', data.session.user.id);
+
+        const rolesList = (rolesData || []).map((r: any) => r.role);
+        const allowed = hasRole(rolesList as any, [...OPERATIONS_ROLES, ...SUPER_ADMIN_ROLES]);
+
+        if (!allowed) {
+          await logSecurityEvent('login_failed', 'critical', { portal: 'operations', email, reason: 'unauthorized_role', roles: rolesList });
+          setErrorMessage('Access Denied: Your account does not possess operations clearance.');
+          await supabase.auth.signOut();
+          return;
+        }
+
+        await logSecurityEvent('login_success', 'info', { portal: 'operations', email }, data.session.user.id);
+        navigate('/operations');
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Operations authentication failed.');
+    } finally {
       setIsSubmitting(false);
-      navigate('/operations');
-    }, 1000);
+    }
   };
 
   return (
@@ -41,6 +82,13 @@ export default function OperationsLoginPage() {
           Secure access for authorized Be Humble & Grow operations and verification personnel.
         </p>
       </div>
+
+      {errorMessage && (
+        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-medium text-left flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
 
       <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-amber-900 text-left flex items-start gap-2.5">
         <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
