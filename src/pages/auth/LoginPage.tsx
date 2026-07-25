@@ -41,13 +41,6 @@ export default function LoginPage() {
         } else {
           setErrorMessage(error.message);
         }
-
-        // If in local development preview and Supabase has no user record yet, offer dev login fallback
-        if (import.meta.env.DEV && !error.message.includes('Email not confirmed')) {
-          console.log('[Dev Preview] Bypassing auth check in local development mode.');
-          navigate('/candidate');
-          return;
-        }
         return;
       }
 
@@ -130,7 +123,7 @@ export default function LoginPage() {
               onChange={(e) => setRememberMe(e.target.checked)}
               className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
             />
-            <span>Remember me on this device</span>
+            <span>Remember session</span>
           </label>
 
           <Link to="/forgot-password" className="font-bold text-emerald-700 hover:underline">
@@ -138,7 +131,7 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* Submit Action */}
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting}
@@ -147,32 +140,18 @@ export default function LoginPage() {
           {isSubmitting ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Signing in securely...</span>
+              <span>Authenticating...</span>
             </>
           ) : (
             <>
               <LogIn className="w-5 h-5" />
-              <span>Log In to Candidate Dashboard</span>
+              <span>Log In to Candidate Portal</span>
             </>
           )}
         </button>
       </form>
 
-      {/* Trust Notice */}
-      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 text-left flex items-center gap-2">
-        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-        <span>Your account credentials and documents are protected through encrypted access controls.</span>
-      </div>
-
-      {/* Register Link */}
-      <div className="pt-1 text-center text-xs text-slate-600">
-        <span>Don't have a candidate account yet? </span>
-        <Link to="/register" className="font-bold text-emerald-700 hover:underline">
-          Create Account Here
-        </Link>
-      </div>
-
-      {/* Portal Switcher */}
+      {/* Switcher & Registration */}
       <PortalSwitcher currentRole="candidate" />
 
     </div>

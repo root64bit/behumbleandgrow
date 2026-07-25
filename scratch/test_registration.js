@@ -5,18 +5,18 @@ const key = 'sb_publishable_mowxTxhcUduTcIiNs0DyNw_e4Z3-QqI';
 
 const supabase = createClient(url, key);
 
-async function testRegistrationAndVerification() {
-  const testEmail = `candidate.verified.${Date.now()}@gmail.com`;
+async function testRegistrationWithCustomSmtp() {
+  const testEmail = `candidate.smtp.test.${Date.now()}@gmail.com`;
   const testPassword = 'Password123!';
 
-  console.log(`Testing registration & auto profile creation for: ${testEmail}`);
+  console.log(`Testing candidate registration with Custom SMTP for: ${testEmail}`);
 
   const { data, error } = await supabase.auth.signUp({
     email: testEmail,
     password: testPassword,
     options: {
       data: {
-        full_name: 'Gaspar Test Candidate',
+        full_name: 'Custom SMTP Candidate',
         phone: '+254712345678',
         nationality: 'Kenya',
         residence: 'Kenya',
@@ -25,7 +25,8 @@ async function testRegistrationAndVerification() {
     },
   });
 
-  console.log('SignUp Data User ID:', data?.user?.id);
+  console.log('SignUp Result Data User ID:', data?.user?.id);
+  console.log('SignUp Result Session:', data?.session ? 'Active Session' : 'Email Confirmation Sent');
   console.log('SignUp Error:', error);
 
   if (data?.user?.id) {
@@ -33,20 +34,8 @@ async function testRegistrationAndVerification() {
       .from('profiles')
       .select('*')
       .eq('id', data.user.id);
-    console.log('Auto-created Profile:', prof);
-
-    const { data: cand } = await supabase
-      .from('candidates')
-      .select('*')
-      .eq('id', data.user.id);
-    console.log('Auto-created Candidate:', cand);
-
-    const { data: roles } = await supabase
-      .from('user_roles')
-      .select('*')
-      .eq('profile_id', data.user.id);
-    console.log('Auto-assigned User Roles:', roles);
+    console.log('PostgreSQL Profile Verification:', prof);
   }
 }
 
-testRegistrationAndVerification();
+testRegistrationWithCustomSmtp();
