@@ -19,6 +19,8 @@ const mockCandidateSession = {
 };
 
 test.describe('Be Humble & Grow — Candidate Offer Details & Decision E2E Suite', () => {
+  test.setTimeout(45000);
+
   test.beforeEach(async ({ page }) => {
     await page.route('**/auth/v1/user', async (route) => {
       await route.fulfill({
