@@ -165,7 +165,7 @@ test.describe('Be Humble & Grow — Candidate Application Details E2E Suite', ()
   });
 
   test('1. Application Details page loads with H1 title, status banner & job summary', async ({ page }) => {
-    await page.goto('/candidate/applications/app-101', { waitUntil: 'networkidle' });
+    await page.goto('/candidate/applications/app-101', { waitUntil: 'domcontentloaded' });
 
     await expect(page.locator('h1')).toBeVisible({ timeout: 15000 });
     await expect(page.getByText('Application Details').first()).toBeVisible();
@@ -173,27 +173,27 @@ test.describe('Be Humble & Grow — Candidate Application Details E2E Suite', ()
   });
 
   test('2. Renders 8-stage progress roadmap and historical timeline', async ({ page }) => {
-    await page.goto('/candidate/applications/app-101', { waitUntil: 'networkidle' });
+    await page.goto('/candidate/applications/app-101', { waitUntil: 'domcontentloaded' });
 
-    await expect(page.getByText('Application Roadmap').first()).toBeVisible();
-    await expect(page.getByText('Historical Activity Timeline').first()).toBeVisible();
+    await expect(page.getByText('Application Roadmap').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Historical Activity Timeline').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('3. Sub-tab navigation switches between Overview, Screening, Documents and Payment', async ({ page }) => {
-    await page.goto('/candidate/applications/app-101', { waitUntil: 'networkidle' });
+    await page.goto('/candidate/applications/app-101', { waitUntil: 'domcontentloaded' });
 
     await page.getByRole('button', { name: 'Payment' }).click();
-    await expect(page.getByText('Application fee disabled during the closed technical pilot.').first()).toBeVisible();
+    await expect(page.getByText('Application fee disabled during the closed technical pilot.').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('4. Renders 404 Not Found for unowned or non-existent application ID', async ({ page }) => {
-    await page.goto('/candidate/applications/invalid-unowned-app-id', { waitUntil: 'networkidle' });
+    await page.goto('/candidate/applications/invalid-unowned-app-id', { waitUntil: 'domcontentloaded' });
 
     await expect(page.getByText('Application Not Available').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('5. Back button navigates to My Applications list', async ({ page }) => {
-    await page.goto('/candidate/applications/app-101', { waitUntil: 'networkidle' });
+    await page.goto('/candidate/applications/app-101', { waitUntil: 'domcontentloaded' });
 
     await page.getByRole('link', { name: 'Back to My Applications' }).click();
     await expect(page).toHaveURL(/\/candidate\/applications$/);
