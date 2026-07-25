@@ -15,15 +15,12 @@ const SAFE_APPLICATION_DETAILS_COLUMNS = `
   id,
   job_id,
   candidate_id,
-  partner_id,
   stage,
   status,
   screening_answers,
   consent_given,
   submitted_at,
   updated_at,
-  employer_disclosure_status,
-  employer_disclosed_at,
   jobs (
     id,
     title,
@@ -45,12 +42,8 @@ export async function loadMyApplicationDetails(
     .eq('candidate_id', userId)
     .maybeSingle();
 
-  if (appError) {
-    throw new Error(`Database error fetching application details: ${appError.message}`);
-  }
-
-  if (!appData) {
-    return null; // Not Found or Unowned
+  if (appError || !appData) {
+    return null; // Not Found or Unowned or query error
   }
 
   const application = appData as unknown as Application;
