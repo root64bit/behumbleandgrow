@@ -154,10 +154,13 @@ test.describe('Be Humble & Grow — Candidate Offer Details & Decision E2E Suite
     await checkboxes.nth(1).check();
     await checkboxes.nth(2).check();
 
-    await page.getByPlaceholder('e.g. Amina Mabote').fill('Amina Mabote');
+    const input = page.getByPlaceholder('e.g. Amina Mabote');
+    await expect(input).toBeVisible({ timeout: 10000 });
+    await input.fill('Amina Mabote');
 
-    await expect(page.getByRole('button', { name: 'Accept Conditional Offer' })).toBeEnabled();
-    await page.getByRole('button', { name: 'Accept Conditional Offer' }).click();
+    const submitBtn = page.getByRole('button', { name: 'Accept Conditional Offer' });
+    await expect(submitBtn).toBeEnabled({ timeout: 10000 });
+    await submitBtn.click();
 
     await expect(page.getByText('Conditional Offer Accepted').first()).toBeVisible({ timeout: 15000 });
   });
