@@ -1,77 +1,126 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../lib/auth/AuthContext';
-import { getCandidateApplications } from '../../services/application.service';
+import React, { useState } from 'react';
+import { useCandidateApplications } from '../../hooks/candidate/useCandidateApplications';
+import { CandidateApplicationsHeader } from '../../components/candidate/applications/CandidateApplicationsHeader';
+import { CandidateApplicationsSummary } from '../../components/candidate/applications/CandidateApplicationsSummary';
+import { CandidateApplicationsTabs } from '../../components/candidate/applications/CandidateApplicationsTabs';
+import { CandidateApplicationCard } from '../../components/candidate/applications/CandidateApplicationCard';
+import { CandidateApplicationsPagination } from '../../components/candidate/applications/CandidateApplicationsPagination';
+import { CandidateApplicationsEmptyState } from '../../components/candidate/applications/CandidateApplicationsEmptyState';
+import { CandidateApplicationsNoResults } from '../../components/candidate/applications/CandidateApplicationsNoResults';
+import { CandidateApplicationsSkeleton } from '../../components/candidate/applications/CandidateApplicationsSkeleton';
+import { CandidateApplicationsErrorState } from '../../components/candidate/applications/CandidateApplicationsErrorState';
+import { CandidateApplicationsSectionError } from '../../components/candidate/applications/CandidateApplicationsSectionError';
 import type { Application } from '../../lib/supabase/types';
-import { Briefcase, Clock, ShieldCheck } from 'lucide-react';
 
 export default function CandidateApplicationsPage() {
-  const { user } = useAuth();
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    applicationsState,
+    summary,
+    statusFilter,
+    setStatusFilter,
+    searchQuery,
+    setSearchQuery,
+    page,
+    setPage,
+    hasMore,
+    withdrawLoading,
+    withdrawError,
+    handleWithdraw,
+    refetch,
+  } = useCandidateApplications();
 
-  useEffect(() => {
-    if (user) {
-      getCandidateApplications(user.id).then((apps) => {
-        setApplications(apps);
-        setLoading(false);
-      });
-    }
-  }, [user]);
+  const [withdrawTargetApp, setWithdrawTargetApp] = useState<Application | null>(null);
+
+  if (applicationsState.status === 'loading') {
+    return <CandidateApplicationsSkeleton />;
+  }
+
+  if (applicationsState.status === 'error') {
+    return <CandidateApplicationsErrorState message={applicationsState.message} onRetry={refetch} />;
+  }
+
+  const applicationsList = applicationsState.status === 'success' ? applicationsState.data : [];
+
+  const handleConfirmWithdraw = async () => {
+    if (!withdrawTargetApp) return;
+    await handleWithdraw(withdrawTargetApp.id);
+    setWithdrawTargetApp(null);
+  };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Submitted Applications</h1>
-        <p className="text-xs text-slate-500 mt-1">
-          Track the live review status and operations progress of your submitted vacancy dossiers.
-        </p>
-      </div>
+    <div className="space-y-6 max-w-4xl mx-auto pb-24 text-left">
+      {/* Page Header with Search & Primary Action */}
+      <CandidateApplicationsHeader searchQuery={searchQuery} onSearchChange={setSearchQuery} />
 
-      {loading ? (
-        <div className="flex justify-center py-12">
-          <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      ) : applications.length === 0 ? (
-        <div className="bg-white p-8 rounded-2xl border border-slate-200 text-center space-y-3">
-          <Briefcase className="w-8 h-8 text-slate-400 mx-auto" />
-          <h3 className="text-base font-bold text-slate-800">No Applications Submitted</h3>
-          <p className="text-xs text-slate-500">Browse published vacancies in the jobs portal to submit your candidacy.</p>
-        </div>
+      {/* Summary Metrics */}
+      <CandidateApplicationsSummary summary={summary} />
+
+      {/* Status Tabs Navigation */}
+      <CandidateApplicationsTabs activeTab={statusFilter} onTabChange={setStatusFilter} />
+
+      {/* Withdrawal Error Notice */}
+      {withdrawError && (
+        <CandidateApplicationsSectionError message={withdrawError} onRetry={refetch} />
+      )}
+
+      {/* Content Rendering */}
+      {applicationsState.status === 'empty' ? (
+        <CandidateApplicationsEmptyState />
+      ) : applicationsList.length === 0 ? (
+        <CandidateApplicationsNoResults
+          onClearFilters={() => {
+            setStatusFilter('all');
+            setSearchQuery('');
+          }}
+        />
       ) : (
         <div className="space-y-4">
-          {applications.map((app: any) => (
-            <div key={app.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-              <div className="flex justify-between items-start">
-                <div>
-                  <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full text-[10px] font-bold uppercase">
-                    Stage: {app.stage}
-                  </span>
-                  <h3 className="text-lg font-bold text-slate-900 mt-1">{app.jobs?.title || 'UAE Vacancy'}</h3>
-                  <p className="text-xs text-slate-500">
-                    Location: {app.jobs?.location || 'Dubai, UAE'} | Salary: {app.jobs?.salary_range || '14,000 AED / mo'}
-                  </p>
-                </div>
-
-                <div className="text-right">
-                  <span className="text-[11px] text-slate-400 block">Status:</span>
-                  <span className="px-2.5 py-1 bg-blue-100 text-blue-800 rounded-lg text-xs font-bold uppercase">
-                    {app.status}
-                  </span>
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                <div className="flex items-center space-x-1">
-                  <Clock className="w-3.5 h-3.5" />
-                  <span>Submitted on: {new Date(app.submitted_at).toLocaleDateString()}</span>
-                </div>
-                <div className="flex items-center space-x-1 text-emerald-600 font-semibold">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Consent Logged</span>
-                </div>
-              </div>
-            </div>
+          {applicationsList.map((app) => (
+            <CandidateApplicationCard
+              key={app.id}
+              application={app}
+              onWithdrawClick={setWithdrawTargetApp}
+            />
           ))}
+
+          {/* Pagination */}
+          <CandidateApplicationsPagination
+            page={page}
+            hasMore={hasMore}
+            onPageChange={setPage}
+          />
+        </div>
+      )}
+
+      {/* Withdrawal Confirmation Dialog */}
+      {withdrawTargetApp && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl space-y-4 text-left">
+            <h3 className="text-base font-extrabold text-[#00122B]">Confirm Application Withdrawal</h3>
+            <p className="text-xs text-slate-600">
+              Are you sure you want to withdraw your application for{' '}
+              <span className="font-bold text-slate-900">
+                {(withdrawTargetApp as any).jobs?.title || 'this position'}
+              </span>
+              ? This action will mark your dossier as withdrawn.
+            </p>
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                onClick={() => setWithdrawTargetApp(null)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmWithdraw}
+                disabled={withdrawLoading}
+                className="px-4 py-2 bg-red-700 hover:bg-red-800 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-xs"
+              >
+                {withdrawLoading ? 'Withdrawing...' : 'Withdraw Application'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
