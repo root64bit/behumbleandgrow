@@ -58,9 +58,9 @@ test.describe('Be Humble & Grow — Candidate Offer Details & Decision E2E Suite
 
       if (url.includes('unowned-offer-999')) {
         await route.fulfill({
-          status: 406,
+          status: 200,
           contentType: 'application/json',
-          body: JSON.stringify({ code: 'PGRST116', details: 'The result contains 0 rows', message: 'JSON object requested, multiple (or no) rows returned' }),
+          body: acceptHeader.includes('vnd.pgrst.object') ? JSON.stringify(null) : JSON.stringify([]),
         });
         return;
       }
