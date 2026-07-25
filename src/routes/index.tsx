@@ -54,6 +54,7 @@ const CandidateDocumentsPage = lazy(() => import('../pages/candidate/CandidateDo
 const CandidateApplicationsPage = lazy(() => import('../pages/candidate/CandidateApplicationsPage'));
 const CandidateApplicationDetailsPage = lazy(() => import('../pages/candidate/CandidateApplicationDetailsPage'));
 const CandidateInterviewsPage = lazy(() => import('../pages/candidate/CandidateInterviewsPage'));
+const CandidateInterviewDetailsPage = lazy(() => import('../pages/candidate/CandidateInterviewDetailsPage'));
 const CandidateOffersPage = lazy(() => import('../pages/candidate/CandidateOffersPage'));
 const CandidatePlacementPage = lazy(() => import('../pages/candidate/CandidatePlacementPage'));
 const CandidateSupportPage = lazy(() => import('../pages/candidate/CandidateSupportPage'));
@@ -197,6 +198,7 @@ export const router = createBrowserRouter([
       { path: 'jobs/:slug', element: <Lazy component={JobDetailPage} /> },
       { path: 'saved-jobs', element: <Lazy component={JobsPage} /> },
       { path: 'interviews', element: <Lazy component={CandidateInterviewsPage} /> },
+      { path: 'interviews/:interviewId', element: <Lazy component={CandidateInterviewDetailsPage} /> },
       { path: 'offers', element: <Lazy component={CandidateOffersPage} /> },
       { path: 'placement', element: <Lazy component={CandidatePlacementPage} /> },
       { path: 'support', element: <Lazy component={CandidateSupportPage} /> },
