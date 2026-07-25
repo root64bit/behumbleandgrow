@@ -52,6 +52,7 @@ const CandidateOnboardingPage = lazy(() => import('../pages/candidate/CandidateO
 const CandidateProfilePage = lazy(() => import('../pages/candidate/CandidateProfilePage'));
 const CandidateDocumentsPage = lazy(() => import('../pages/candidate/CandidateDocumentsPage'));
 const CandidateApplicationsPage = lazy(() => import('../pages/candidate/CandidateApplicationsPage'));
+const CandidateApplicationDetailsPage = lazy(() => import('../pages/candidate/CandidateApplicationDetailsPage'));
 const CandidateInterviewsPage = lazy(() => import('../pages/candidate/CandidateInterviewsPage'));
 const CandidateOffersPage = lazy(() => import('../pages/candidate/CandidateOffersPage'));
 const CandidatePlacementPage = lazy(() => import('../pages/candidate/CandidatePlacementPage'));
@@ -191,6 +192,7 @@ export const router = createBrowserRouter([
       { path: 'profile', element: <Lazy component={CandidateProfilePage} /> },
       { path: 'documents', element: <Lazy component={CandidateDocumentsPage} /> },
       { path: 'applications', element: <Lazy component={CandidateApplicationsPage} /> },
+      { path: 'applications/:applicationId', element: <Lazy component={CandidateApplicationDetailsPage} /> },
       { path: 'jobs', element: <Lazy component={JobsPage} /> },
       { path: 'jobs/:slug', element: <Lazy component={JobDetailPage} /> },
       { path: 'saved-jobs', element: <Lazy component={JobsPage} /> },
