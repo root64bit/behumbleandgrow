@@ -13,7 +13,7 @@ export default function CandidateBottomNavigation() {
 
   const navItems = [
     { label: 'Home', path: '/candidate/dashboard', icon: LayoutDashboard },
-    { label: 'Opportunities', path: '/jobs', icon: Briefcase },
+    { label: 'Opportunities', path: '/candidate/jobs', icon: Briefcase },
     { label: 'Applications', path: '/candidate/applications', icon: Send, badge: 1 },
     { label: 'Interviews', path: '/candidate/interviews', icon: Video, badge: 1 },
     { label: 'Profile', path: '/candidate/profile', icon: User }

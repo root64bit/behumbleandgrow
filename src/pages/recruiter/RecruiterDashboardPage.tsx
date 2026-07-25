@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import RecruitmentPartnerLayout from '../../layouts/RecruitmentPartnerLayout';
 import PartnerStatusCard from '../../components/recruiter/PartnerStatusCard';
 import PartnerKpiGrid from '../../components/recruiter/PartnerKpiGrid';
 import PartnerActionCentre from '../../components/recruiter/PartnerActionCentre';
@@ -36,7 +35,7 @@ export default function RecruiterDashboardPage() {
   };
 
   return (
-    <RecruitmentPartnerLayout>
+    <div className="space-y-8">
       {/* Executive Header Banner */}
       <div className="bg-gradient-to-r from-[#102A4C] via-[#0B2342] to-[#078A5B] text-white rounded-3xl p-6 sm:p-8 shadow-xl relative overflow-hidden text-left">
         <div className="relative z-10 space-y-4">
@@ -105,6 +104,6 @@ export default function RecruiterDashboardPage() {
         <PlacementTrackerWidget placements={placements} />
         <PartnerPerformanceSla performance={performance} />
       </div>
-    </RecruitmentPartnerLayout>
+    </div>
   );
 }

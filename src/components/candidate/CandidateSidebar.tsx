@@ -63,7 +63,7 @@ export default function CandidateSidebar({
     {
       title: 'Opportunities',
       items: [
-        { label: 'Find Opportunities', path: '/jobs', icon: Briefcase },
+        { label: 'Find Opportunities', path: '/candidate/jobs', icon: Briefcase },
         { label: 'My Applications', path: '/candidate/applications', icon: Send, badgeCount: 1 }
       ]
     },

@@ -1,5 +1,4 @@
 import React from 'react';
-import CandidateLayout from '../../layouts/CandidateLayout';
 import CandidateHeaderBanner from '../../components/candidate/CandidateHeaderBanner';
 import CandidateJourneyTracker from '../../components/candidate/CandidateJourneyTracker';
 import NextStepCard from '../../components/candidate/NextStepCard';
@@ -26,7 +25,7 @@ export default function CandidateDashboardPage() {
   const placement = CandidateService.getPlacementProgress();
 
   return (
-    <CandidateLayout>
+    <div className="space-y-8">
       {/* 1. Dynamic Greeting Header Banner */}
       <CandidateHeaderBanner candidate={candidate} />
 
@@ -59,6 +58,6 @@ export default function CandidateDashboardPage() {
 
       {/* 7. Recommended UAE Opportunities */}
       <RecommendedJobsWidget jobs={jobs} />
-    </CandidateLayout>
+    </div>
   );
 }

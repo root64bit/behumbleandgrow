@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { createBrowserRouter, Outlet } from 'react-router-dom';
 
 // Layouts
@@ -14,20 +14,27 @@ import RecruitmentPartnerLayout from '../layouts/RecruitmentPartnerLayout';
 import { ProtectedRoute, RoleGuard } from '../lib/auth/RouteGuards';
 import { SUPER_ADMIN_ROLES, OPERATIONS_ROLES, RECRUITER_ROLES, EMPLOYER_ROLES } from '../lib/permissions/rbac';
 
-// Loading Fallback Component
-const RouteLoader = () => (
-  <div className="flex items-center justify-center min-h-[400px] w-full">
-    <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-  </div>
+// Lazy Load helper
+const Lazy = ({ component: Component }: { component: React.ComponentType }) => (
+  <Suspense fallback={
+    <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+      <div className="flex flex-col items-center space-y-4">
+        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-sm font-medium text-slate-300">Loading module...</p>
+      </div>
+    </div>
+  }>
+    <Component />
+  </Suspense>
 );
 
-// Lazy-Loaded Public Pages
+// Public Pages
 const HomePage = lazy(() => import('../pages/public/HomePage'));
 const EligibilityPage = lazy(() => import('../pages/public/EligibilityPage'));
 const JobsPage = lazy(() => import('../pages/public/JobsPage'));
 const JobDetailPage = lazy(() => import('../pages/public/JobDetailPage'));
 
-// Lazy-Loaded Auth Pages
+// Auth Pages
 const LoginPage = lazy(() => import('../pages/auth/LoginPage'));
 const RegisterPage = lazy(() => import('../pages/auth/RegisterPage'));
 const VerifyEmailPage = lazy(() => import('../pages/auth/VerifyEmailPage'));
@@ -39,36 +46,30 @@ const OperationsLoginPage = lazy(() => import('../pages/auth/OperationsLoginPage
 const InviteAcceptancePage = lazy(() => import('../pages/auth/InviteAcceptancePage'));
 const AccessDeniedPage = lazy(() => import('../pages/auth/AccessDeniedPage'));
 
-// Lazy-Loaded Candidate Pages
+// Candidate Pages
 const CandidateDashboardPage = lazy(() => import('../pages/candidate/CandidateDashboardPage'));
 const CandidateOnboardingPage = lazy(() => import('../pages/candidate/CandidateOnboardingPage'));
 const CandidateProfilePage = lazy(() => import('../pages/candidate/CandidateProfilePage'));
 const CandidateDocumentsPage = lazy(() => import('../pages/candidate/CandidateDocumentsPage'));
 const CandidateApplicationsPage = lazy(() => import('../pages/candidate/CandidateApplicationsPage'));
 
-// Lazy-Loaded Operations Pages
+// Operations Pages
 const OperationsDashboardPage = lazy(() => import('../pages/operations/OperationsDashboardPage'));
 const OperationsCandidatesPage = lazy(() => import('../pages/operations/OperationsCandidatesPage'));
 const OperationsCandidateDetailPage = lazy(() => import('../pages/operations/OperationsCandidateDetailPage'));
 const OperationsApplicationsPage = lazy(() => import('../pages/operations/OperationsApplicationsPage'));
 
-// Lazy-Loaded Recruiter Pages
+// Recruiter Pages
 const RecruiterDashboardPage = lazy(() => import('../pages/recruiter/RecruiterDashboardPage'));
 const RecruiterLeadsPage = lazy(() => import('../pages/recruiter/RecruiterLeadsPage'));
 const RecruiterPipelinePage = lazy(() => import('../pages/recruiter/RecruiterPipelinePage'));
 const RecruiterTeamPage = lazy(() => import('../pages/recruiter/RecruiterTeamPage'));
 
-// Lazy-Loaded Employer Pages
+// Employer Pages
 const EmployerDashboardPage = lazy(() => import('../pages/employer/EmployerDashboardPage'));
 
-// Lazy-Loaded Super Admin Pages
+// Super Admin Pages
 const SuperAdminDashboardPage = lazy(() => import('../pages/superadmin/SuperAdminDashboardPage'));
-
-const Lazy = ({ component: Component }: { component: React.ComponentType }) => (
-  <Suspense fallback={<RouteLoader />}>
-    <Component />
-  </Suspense>
-);
 
 export const router = createBrowserRouter([
   // Public Routes
@@ -107,7 +108,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute requireEmailVerified={false}>
         <RoleGuard allowedRoles={SUPER_ADMIN_ROLES}>
-          <Lazy component={SuperAdminDashboardPage} />
+          <SuperAdminDashboardPage />
         </RoleGuard>
       </ProtectedRoute>
     ),
@@ -185,6 +186,9 @@ export const router = createBrowserRouter([
       { path: 'profile', element: <Lazy component={CandidateProfilePage} /> },
       { path: 'documents', element: <Lazy component={CandidateDocumentsPage} /> },
       { path: 'applications', element: <Lazy component={CandidateApplicationsPage} /> },
+      { path: 'jobs', element: <Lazy component={JobsPage} /> },
+      { path: 'jobs/:slug', element: <Lazy component={JobDetailPage} /> },
+      { path: 'saved-jobs', element: <Lazy component={CandidateDashboardPage} /> },
       { path: 'interviews', element: <Lazy component={CandidateDashboardPage} /> },
       { path: 'offers', element: <Lazy component={CandidateDashboardPage} /> },
       { path: 'placement', element: <Lazy component={CandidateDashboardPage} /> },
