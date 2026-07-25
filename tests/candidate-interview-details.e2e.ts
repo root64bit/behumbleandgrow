@@ -68,6 +68,16 @@ test.describe('Be Humble & Grow — Candidate Interview Details E2E Suite', () =
     });
 
     await page.route('**/rest/v1/interviews*', async (route) => {
+      const url = route.request().url();
+      if (url.includes('unowned-interview-999')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([]),
+        });
+        return;
+      }
+
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -120,7 +130,7 @@ test.describe('Be Humble & Grow — Candidate Interview Details E2E Suite', () =
   });
 
   test('1. Interview Details page loads with hero card, job title and dual time', async ({ page }) => {
-    await page.goto('/candidate/interviews/int-101', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/interviews/int-101');
 
     await expect(page.locator('h1')).toBeVisible({ timeout: 15000 });
     await expect(page.getByText('Senior UX Designer').first()).toBeVisible();
@@ -128,28 +138,28 @@ test.describe('Be Humble & Grow — Candidate Interview Details E2E Suite', () =
   });
 
   test('2. Displays Preparation Checklist and Required Documents sections', async ({ page }) => {
-    await page.goto('/candidate/interviews/int-101', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/interviews/int-101');
 
     await expect(page.getByText('Preparation Checklist').first()).toBeVisible();
     await expect(page.getByText('Required Documents').first()).toBeVisible();
   });
 
   test('3. Opens Reschedule request modal from attendance card', async ({ page }) => {
-    await page.goto('/candidate/interviews/int-101', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/interviews/int-101');
 
     await page.getByRole('button', { name: 'Request Reschedule' }).first().click();
     await expect(page.getByText('Reason for Rescheduling').first()).toBeVisible();
   });
 
   test('4. Back button navigates to My Interviews list', async ({ page }) => {
-    await page.goto('/candidate/interviews/int-101', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/interviews/int-101');
 
     await page.getByRole('link', { name: 'Back to My Interviews' }).click();
     await expect(page).toHaveURL(/\/candidate\/interviews$/);
   });
 
   test('5. Unowned or non-existent interview displays safe Interview Not Available state', async ({ page }) => {
-    await page.goto('/candidate/interviews/unowned-interview-999', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/interviews/unowned-interview-999');
 
     await expect(page.getByText('Interview Not Available').first()).toBeVisible({ timeout: 15000 });
   });
