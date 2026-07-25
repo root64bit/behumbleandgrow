@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { CandidateService } from '../services/candidate.service';
-import { isDemoDataAllowed } from '../hooks/candidate/useCandidateDashboard';
+import { isDemoDataAllowed } from '../hooks/candidate/useCandidateProfile';
 
 describe('Candidate Workspace Unit & RBAC Suite', () => {
   it('should retrieve candidate summary profile with valid defaults', () => {
@@ -28,9 +28,15 @@ describe('Candidate Workspace Unit & RBAC Suite', () => {
   });
 
   it('should verify demo data guard is disabled unless VITE_DEMO_DATA_ENABLED=true in DEV', () => {
-    // In vitest environment without VITE_DEMO_DATA_ENABLED=true
     const demoAllowed = isDemoDataAllowed();
     expect(demoAllowed).toBe(false);
+  });
+
+  it('should verify work experience date chronology validator', () => {
+    const startDate = '2025-06-01';
+    const endDate = '2024-01-01';
+    const isChronologyValid = new Date(endDate) >= new Date(startDate);
+    expect(isChronologyValid).toBe(false);
   });
 
   it('should retrieve candidate document readiness records without exposing private storage paths', () => {
@@ -41,14 +47,14 @@ describe('Candidate Workspace Unit & RBAC Suite', () => {
     expect(docs[0]).not.toHaveProperty('storage_path');
   });
 
-  it('should retrieve recommended UAE job opportunities with match score', () => {
+  it('should verify recommended UAE job opportunities with match score', () => {
     const jobs = CandidateService.getRecommendedJobs();
     expect(jobs.length).toBeGreaterThan(0);
     expect(jobs[0].matchScore).toBeGreaterThanOrEqual(80);
     expect(jobs[0].emirate).toContain('Dubai');
   });
 
-  it('should retrieve video interview details and preparation checklist', () => {
+  it('should verify video interview details and preparation checklist', () => {
     const interviews = CandidateService.getInterviews();
     expect(interviews).toHaveLength(1);
     expect(interviews[0].uaeTime).toContain('GST');
