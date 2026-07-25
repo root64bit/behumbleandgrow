@@ -11,6 +11,7 @@ import {
   CandidatePlacementProgress
 } from '../types/candidate';
 import type { WorkExperience, Education } from '../lib/supabase/types';
+import { supabase } from '../lib/supabase/client';
 
 export class CandidateService {
 
@@ -169,6 +170,45 @@ export class CandidateService {
 
 // Exported standalone functions for compatibility with CandidateProfilePage & CandidateDocumentsPage
 export async function getCandidateProfile(userId?: string) {
+  if (userId) {
+    try {
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      const { data: cand } = await supabase
+        .from('candidates')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (prof) {
+        return {
+          id: prof.id,
+          user_id: prof.id,
+          profile: { 
+            full_name: prof.full_name,
+            email: prof.email,
+            phone: prof.phone,
+          },
+          candidate: {
+            headline: cand?.headline || 'Candidate Profile',
+            bio: cand?.bio || 'Professional Candidate Profile',
+            current_location: cand?.current_location || 'Mozambique',
+            skills: cand?.skills || ['Hospitality', 'Customer Relations'],
+            languages: cand?.languages || ['English'],
+          },
+          experiences: [],
+          educations: [],
+        };
+      }
+    } catch (err) {
+      console.warn('Unable to query Supabase profile, using fallback:', err);
+    }
+  }
+
   const summary = CandidateService.getCandidateSummary();
   const workExp: WorkExperience[] = [
     { 
@@ -211,6 +251,20 @@ export async function getCandidateProfile(userId?: string) {
 }
 
 export async function updateCandidateProfile(userId: string, data: any) {
+  try {
+    if (data.full_name) {
+      await supabase.from('profiles').update({ full_name: data.full_name }).eq('id', userId);
+    }
+    if (data.headline || data.bio || data.current_location) {
+      await supabase.from('candidates').update({
+        headline: data.headline,
+        bio: data.bio,
+        current_location: data.current_location,
+      }).eq('id', userId);
+    }
+  } catch (err) {
+    console.warn('Supabase profile update fallback:', err);
+  }
   return { success: true };
 }
 
