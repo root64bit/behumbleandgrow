@@ -1,27 +1,53 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import type { UserRoleName } from '../supabase/types';
-import { hasRole } from '../permissions/rbac';
+import { hasRole, SUPER_ADMIN_ROLES, OPERATIONS_ROLES } from '../permissions/rbac';
+import { getMfaAssuranceLevel } from '../../services/mfa.service';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requireEmailVerified?: boolean;
+  requireMfa?: boolean;
 }
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children,
   requireEmailVerified = true,
+  requireMfa = false,
 }) => {
-  const { user, isLoading, isEmailVerified, isSuspended } = useAuth();
+  const { user, isLoading, isEmailVerified, isSuspended, userRoles } = useAuth();
   const location = useLocation();
+  const [mfaVerified, setMfaVerified] = useState<boolean | null>(null);
 
-  if (isLoading) {
+  const isPrivilegedUser = hasRole(userRoles, [...SUPER_ADMIN_ROLES, ...OPERATIONS_ROLES]);
+  const mfaRequiredForUser = requireMfa || isPrivilegedUser;
+
+  useEffect(() => {
+    async function checkMfa() {
+      if (user && mfaRequiredForUser) {
+        const assurance = await getMfaAssuranceLevel();
+        if (assurance && assurance.nextLevel === 'aal2' && assurance.currentLevel !== 'aal2') {
+          setMfaVerified(false);
+        } else {
+          setMfaVerified(true);
+        }
+      } else {
+        setMfaVerified(true);
+      }
+    }
+
+    if (!isLoading) {
+      checkMfa();
+    }
+  }, [user, isLoading, mfaRequiredForUser]);
+
+  if (isLoading || mfaVerified === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
         <div className="flex flex-col items-center space-y-4">
           <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-sm font-medium text-slate-300">Resolving security session...</p>
+          <p className="text-sm font-medium text-slate-300">Resolving security session & assurance level...</p>
         </div>
       </div>
     );
@@ -46,6 +72,18 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   if (requireEmailVerified && !isEmailVerified) {
     return <Navigate to="/verify-email" replace />;
+  }
+
+  if (mfaRequiredForUser && mfaVerified === false) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white p-6">
+        <div className="max-w-md bg-slate-900 p-8 rounded-2xl border border-amber-500/30 text-center space-y-4 shadow-xl">
+          <span className="px-3 py-1 bg-amber-500/10 text-amber-400 text-xs font-bold rounded-full uppercase">MFA Challenge Required</span>
+          <h2 className="text-xl font-bold text-white">Two-Factor Authentication Required</h2>
+          <p className="text-xs text-slate-400">Access to privileged administration portals requires multi-factor authenticator (TOTP) verification. Please complete MFA challenge.</p>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;
