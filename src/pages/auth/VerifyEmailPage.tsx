@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { MailCheck, CheckCircle2, RefreshCw, ArrowRight, ShieldCheck } from 'lucide-react';
+import { MailCheck, CheckCircle2, RefreshCw, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
+import { supabase } from '../../lib/supabase/client';
 
 export default function VerifyEmailPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const userEmail = location.state?.email || 'candidate@example.com';
-  const maskedEmail = userEmail.replace(/(.{2})(.*)(?=@)/, (gp1, gp2, gp3) => gp2 + '*'.repeat(gp3.length));
+  const userEmail = location.state?.email || '';
+  const maskedEmail = userEmail ? userEmail.replace(/(.{2})(.*)(?=@)/, (gp1, gp2, gp3) => gp2 + '*'.repeat(gp3.length)) : 'your email address';
 
-  const [countdown, setCountdown] = useState(60);
+  const [countdown, setCountdown] = useState(0);
   const [isResending, setIsResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
@@ -23,19 +25,41 @@ export default function VerifyEmailPage() {
     return () => clearInterval(timer);
   }, [countdown, isVerified]);
 
-  const handleResend = () => {
-    if (countdown > 0 || isResending) return;
+  const handleResend = async () => {
+    if (countdown > 0 || isResending || !userEmail) return;
 
     setIsResending(true);
-    setTimeout(() => {
-      setIsResending(false);
+    setErrorMessage('');
+    setResendSuccess(false);
+
+    try {
+      const redirectUrl = `${window.location.origin}/login`;
+
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: userEmail,
+        options: {
+          emailRedirectTo: redirectUrl,
+        },
+      });
+
+      if (error) {
+        console.warn('Resend verification email error:', error.message);
+        setErrorMessage(error.message);
+        return;
+      }
+
       setResendSuccess(true);
       setCountdown(60);
-      setTimeout(() => setResendSuccess(false), 4000);
-    }, 1000);
+      setTimeout(() => setResendSuccess(false), 5000);
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to resend email. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
   };
 
-  const handleSimulateVerification = () => {
+  const handleProceedToDashboard = () => {
     setIsVerified(true);
   };
 
@@ -55,7 +79,7 @@ export default function VerifyEmailPage() {
             </h1>
             
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              We sent a verification email to <span className="font-bold text-slate-900">{maskedEmail}</span>. Please open the email and follow the link to activate your candidate account.
+              We sent a verification email to <span className="font-bold text-slate-900">{maskedEmail}</span>. Please open the email and follow the activation link to confirm your candidate account.
             </p>
           </div>
 
@@ -65,19 +89,26 @@ export default function VerifyEmailPage() {
             </div>
           )}
 
+          {errorMessage && (
+            <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 font-medium text-left flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           {/* Verification Actions */}
           <div className="space-y-3 pt-2">
             <button
-              onClick={handleSimulateVerification}
+              onClick={handleProceedToDashboard}
               className="btn btn-primary w-full py-3.5 text-base shadow-md"
             >
-              <span>I've Verified My Email</span>
+              <span>I've Verified My Email — Continue</span>
               <ArrowRight className="w-4 h-4 ml-1" />
             </button>
 
             <button
               onClick={handleResend}
-              disabled={countdown > 0 || isResending}
+              disabled={countdown > 0 || isResending || !userEmail}
               className="btn btn-secondary w-full py-3 text-sm disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${isResending ? 'animate-spin' : ''}`} />
@@ -89,7 +120,7 @@ export default function VerifyEmailPage() {
 
           {/* Help Links */}
           <div className="pt-4 border-t border-slate-100 text-xs text-slate-500 text-left space-y-1">
-            <p>Didn't receive the email? Check your spam folder or ensure your address is entered correctly.</p>
+            <p>Didn't receive the email? Check your spam folder or wait 1 minute before resending.</p>
             <p>Need to update your email? <Link to="/register" className="text-emerald-700 font-bold hover:underline">Re-register with correct address</Link>.</p>
           </div>
         </>

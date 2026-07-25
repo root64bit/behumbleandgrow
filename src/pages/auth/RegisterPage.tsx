@@ -57,11 +57,14 @@ export default function RegisterPage() {
     setIsSubmitting(true);
 
     try {
+      const redirectUrl = `${window.location.origin}/login`;
+
       // Execute Real Supabase Auth SignUp
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          emailRedirectTo: redirectUrl,
           data: {
             full_name: fullName,
             phone: `${countryCode}${phone}`,
@@ -84,8 +87,6 @@ export default function RegisterPage() {
           full_name: fullName,
           email,
           phone: `${countryCode}${phone}`,
-          nationality,
-          residence,
           status: 'active',
           updated_at: new Date().toISOString(),
         });
