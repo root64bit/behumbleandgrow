@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import type { UserRoleName } from '../supabase/types';
-import { hasRole, SUPER_ADMIN_ROLES, OPERATIONS_ROLES } from '../permissions/rbac';
+import { hasRole, SUPER_ADMIN_ROLES, OPERATIONS_ROLES, getRoleDefaultRoute } from '../permissions/rbac';
 import { getMfaAssuranceLevel } from '../../services/mfa.service';
 
 interface ProtectedRouteProps {
@@ -53,9 +53,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // If no user session is present, allow testing preview without being blocked by Supabase email rate limits
+  // Require authenticated session (Strict RBAC security)
   if (!user) {
-    return <>{children}</>;
+    let loginTarget = '/login';
+    if (location.pathname.startsWith('/operations')) loginTarget = '/operations/login';
+    else if (location.pathname.startsWith('/partner') || location.pathname.startsWith('/recruiter')) loginTarget = '/partner/login';
+    else if (location.pathname.startsWith('/employer')) loginTarget = '/employer/login';
+
+    return <Navigate to={loginTarget} state={{ from: location }} replace />;
   }
 
   if (isSuspended) {
@@ -104,9 +109,8 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
 
   if (isLoading) return null;
 
-  // If no session is present, allow testing preview
   if (!user) {
-    return <>{children}</>;
+    return <Navigate to="/login" replace />;
   }
 
   const isAuthorized = hasRole(userRoles, allowedRoles);

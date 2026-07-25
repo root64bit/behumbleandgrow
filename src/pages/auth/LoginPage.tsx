@@ -1,14 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, LogIn, ShieldCheck, Loader2, UserRoundCheck, AlertCircle, ArrowRight } from 'lucide-react';
+import { Mail, LogIn, UserRoundCheck, Loader2, AlertCircle } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthInput from '../../components/auth/AuthInput';
 import PasswordInput from '../../components/auth/PasswordInput';
 import PortalSwitcher from '../../components/auth/PortalSwitcher';
 import { supabase } from '../../lib/supabase/client';
+import { useAuth } from '../../lib/auth/AuthContext';
+import { getRoleDefaultRoute } from '../../lib/permissions/rbac';
+import type { UserRoleName } from '../../lib/supabase/types';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const { user, userRoles } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,6 +20,14 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [unconfirmedEmail, setUnconfirmedEmail] = useState(false);
+
+  // If already authenticated, redirect to default role route
+  useEffect(() => {
+    if (user && userRoles.length > 0) {
+      const dest = getRoleDefaultRoute(userRoles);
+      navigate(dest, { replace: true });
+    }
+  }, [user, userRoles, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,18 +55,22 @@ export default function LoginPage() {
         return;
       }
 
-      if (data.session) {
-        navigate('/candidate/dashboard');
+      if (data.session?.user) {
+        // Resolve authoritative role from database
+        const { data: rolesData } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('profile_id', data.session.user.id);
+
+        const rolesList = (rolesData || []).map((r: any) => r.role) as UserRoleName[];
+        const targetRoute = getRoleDefaultRoute(rolesList);
+        navigate(targetRoute);
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Login failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleDemoAccess = () => {
-    navigate('/candidate/dashboard');
   };
 
   return (
@@ -101,7 +117,7 @@ export default function LoginPage() {
           type="email"
           required
           icon={Mail}
-          placeholder="amina.mabote@example.com"
+          placeholder="candidate.test@behumbleandgrow.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
@@ -150,16 +166,6 @@ export default function LoginPage() {
               <span>Log In to Candidate Portal</span>
             </>
           )}
-        </button>
-
-        {/* Quick Demo Access Button */}
-        <button
-          type="button"
-          onClick={handleDemoAccess}
-          className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200"
-        >
-          <span>Instant Test Access (Bypass Email Rate Limit)</span>
-          <ArrowRight className="w-4 h-4 text-emerald-600" />
         </button>
       </form>
 

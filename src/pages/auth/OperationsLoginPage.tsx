@@ -1,21 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Lock, ShieldAlert, Loader2, Key, AlertCircle, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ShieldAlert, Loader2, Key, AlertCircle } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthInput from '../../components/auth/AuthInput';
 import PasswordInput from '../../components/auth/PasswordInput';
 import PortalSwitcher from '../../components/auth/PortalSwitcher';
 import { supabase } from '../../lib/supabase/client';
-import { OPERATIONS_ROLES, SUPER_ADMIN_ROLES, hasRole } from '../../lib/permissions/rbac';
+import { useAuth } from '../../lib/auth/AuthContext';
+import { OPERATIONS_ROLES, SUPER_ADMIN_ROLES, hasRole, getRoleDefaultRoute } from '../../lib/permissions/rbac';
 import { logSecurityEvent } from '../../services/security.service';
+import type { UserRoleName } from '../../lib/supabase/types';
 
 export default function OperationsLoginPage() {
   const navigate = useNavigate();
+  const { user, userRoles } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    if (user && userRoles.length > 0) {
+      const dest = getRoleDefaultRoute(userRoles);
+      navigate(dest, { replace: true });
+    }
+  }, [user, userRoles, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,8 +52,8 @@ export default function OperationsLoginPage() {
           .select('role')
           .eq('profile_id', data.session.user.id);
 
-        const rolesList = (rolesData || []).map((r: any) => r.role);
-        const allowed = hasRole(rolesList as any, [...OPERATIONS_ROLES, ...SUPER_ADMIN_ROLES]);
+        const rolesList = (rolesData || []).map((r: any) => r.role) as UserRoleName[];
+        const allowed = hasRole(rolesList, [...OPERATIONS_ROLES, ...SUPER_ADMIN_ROLES]);
 
         if (!allowed) {
           await logSecurityEvent('login_failed', 'critical', { portal: 'operations', email, reason: 'unauthorized_role', roles: rolesList });
@@ -53,17 +63,14 @@ export default function OperationsLoginPage() {
         }
 
         await logSecurityEvent('login_success', 'info', { portal: 'operations', email }, data.session.user.id);
-        navigate('/operations');
+        const target = getRoleDefaultRoute(rolesList);
+        navigate(target);
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Operations authentication failed.');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleDemoAccess = () => {
-    navigate('/operations');
   };
 
   return (
@@ -106,7 +113,7 @@ export default function OperationsLoginPage() {
           type="email"
           required
           icon={Mail}
-          placeholder="ops.staff@behumbleandgrow.com"
+          placeholder="ops.test@behumbleandgrow.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
@@ -136,16 +143,6 @@ export default function OperationsLoginPage() {
               <span>Authenticate Operations Session</span>
             </>
           )}
-        </button>
-
-        {/* Instant Test Access Button */}
-        <button
-          type="button"
-          onClick={handleDemoAccess}
-          className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200"
-        >
-          <span>Instant Test Access (Operations Control)</span>
-          <ArrowRight className="w-4 h-4 text-emerald-600" />
         </button>
       </form>
 

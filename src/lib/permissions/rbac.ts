@@ -26,6 +26,7 @@ export const EMPLOYER_ROLES: UserRoleName[] = [
 ];
 
 export function hasRole(userRoles: UserRoleName[], targetRoles: UserRoleName[]): boolean {
+  if (userRoles.includes('super_admin')) return true;
   return userRoles.some((role) => targetRoles.includes(role));
 }
 
@@ -47,4 +48,17 @@ export function isEmployerUser(userRoles: UserRoleName[]): boolean {
 
 export function isCandidateUser(userRoles: UserRoleName[]): boolean {
   return userRoles.includes('candidate');
+}
+
+/**
+ * Returns the single authoritative default landing page for a set of database roles
+ */
+export function getRoleDefaultRoute(userRoles: UserRoleName[]): string {
+  if (!userRoles || userRoles.length === 0) return '/login';
+  if (userRoles.includes('super_admin')) return '/superadmin';
+  if (hasRole(userRoles, OPERATIONS_ROLES)) return '/operations';
+  if (hasRole(userRoles, RECRUITER_ROLES)) return '/recruiter/dashboard';
+  if (hasRole(userRoles, EMPLOYER_ROLES)) return '/employer';
+  if (userRoles.includes('candidate')) return '/candidate/dashboard';
+  return '/candidate/dashboard';
 }

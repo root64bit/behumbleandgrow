@@ -1,22 +1,32 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, LogIn, UsersRound, Loader2, ArrowRight, AlertCircle } from 'lucide-react';
+import { Mail, LogIn, UsersRound, Loader2, AlertCircle } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
 import AuthInput from '../../components/auth/AuthInput';
 import PasswordInput from '../../components/auth/PasswordInput';
 import PortalSwitcher from '../../components/auth/PortalSwitcher';
 import { supabase } from '../../lib/supabase/client';
-import { RECRUITER_ROLES, SUPER_ADMIN_ROLES, hasRole } from '../../lib/permissions/rbac';
+import { useAuth } from '../../lib/auth/AuthContext';
+import { RECRUITER_ROLES, SUPER_ADMIN_ROLES, hasRole, getRoleDefaultRoute } from '../../lib/permissions/rbac';
 import { logSecurityEvent } from '../../services/security.service';
+import type { UserRoleName } from '../../lib/supabase/types';
 
 export default function PartnerLoginPage() {
   const navigate = useNavigate();
+  const { user, userRoles } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    if (user && userRoles.length > 0) {
+      const dest = getRoleDefaultRoute(userRoles);
+      navigate(dest, { replace: true });
+    }
+  }, [user, userRoles, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,8 +53,8 @@ export default function PartnerLoginPage() {
           .select('role')
           .eq('profile_id', data.session.user.id);
 
-        const rolesList = (rolesData || []).map((r: any) => r.role);
-        const allowed = hasRole(rolesList as any, [...RECRUITER_ROLES, ...SUPER_ADMIN_ROLES]);
+        const rolesList = (rolesData || []).map((r: any) => r.role) as UserRoleName[];
+        const allowed = hasRole(rolesList, [...RECRUITER_ROLES, ...SUPER_ADMIN_ROLES]);
 
         if (!allowed) {
           await logSecurityEvent('login_failed', 'critical', { portal: 'partner', email, reason: 'unauthorized_role', roles: rolesList });
@@ -54,17 +64,14 @@ export default function PartnerLoginPage() {
         }
 
         await logSecurityEvent('login_success', 'info', { portal: 'partner', email }, data.session.user.id);
-        navigate('/recruiter/dashboard');
+        const target = getRoleDefaultRoute(rolesList);
+        navigate(target);
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Partner authentication failed.');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleDemoAccess = () => {
-    navigate('/recruiter/dashboard');
   };
 
   return (
@@ -99,7 +106,7 @@ export default function PartnerLoginPage() {
           type="email"
           required
           icon={Mail}
-          placeholder="recruiter@agency.com"
+          placeholder="recruiter.test@behumbleandgrow.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
@@ -145,16 +152,6 @@ export default function PartnerLoginPage() {
               <span>Log In to Partner Console</span>
             </>
           )}
-        </button>
-
-        {/* Instant Test Access Button */}
-        <button
-          type="button"
-          onClick={handleDemoAccess}
-          className="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 border border-slate-200"
-        >
-          <span>Instant Test Access (Recruiter Console)</span>
-          <ArrowRight className="w-4 h-4 text-emerald-600" />
         </button>
       </form>
 
