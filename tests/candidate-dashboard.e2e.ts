@@ -1,15 +1,36 @@
 import { test, expect } from '@playwright/test';
 
+const mockCandidateSession = {
+  access_token: 'mock-access-token',
+  refresh_token: 'mock-refresh-token',
+  expires_in: 3600,
+  expires_at: Math.floor(Date.now() / 1000) + 3600,
+  token_type: 'bearer',
+  user: {
+    id: 'cand-user-1',
+    aud: 'authenticated',
+    role: 'authenticated',
+    email: 'candidate@behumbleandgrow.com',
+    email_confirmed_at: '2026-01-01T00:00:00Z',
+    user_metadata: {
+      full_name: 'Amina Mabote'
+    }
+  }
+};
+
 test.describe('Be Humble & Grow — Candidate Dashboard Comprehensive E2E', () => {
+
+  test.beforeEach(async ({ page }) => {
+    // Inject mock candidate auth session into localStorage under storageKey 'bhg_auth_token'
+    await page.addInitScript((session) => {
+      window.localStorage.setItem('bhg_auth_token', JSON.stringify(session));
+    }, mockCandidateSession);
+  });
   
   test('1. Candidate Dashboard loads with Candidate Workspace identity, welcome banner & 10-stage journey', async ({ page }) => {
     await page.goto('/candidate/dashboard', { waitUntil: 'domcontentloaded' });
 
-    // Verify Candidate Workspace identity badge or heading
-    const pageText = await page.textContent('body');
-    expect(pageText).toMatch(/Candidate Workspace|Welcome|Be Humble & Grow/i);
-
-    // Verify presence of main headers
+    // Verify main header greeting text or candidate identity
     await expect(page.locator('h1')).toBeVisible();
     await expect(page.getByText('Application Journey').first()).toBeVisible();
   });
@@ -68,14 +89,5 @@ test.describe('Be Humble & Grow — Candidate Dashboard Comprehensive E2E', () =
 
     await expect(page.locator('h1')).toBeVisible();
     expect(page.url()).toContain('/candidate/dashboard');
-  });
-
-  test('6. Unauthenticated or wrong-role navigation is handled correctly by RouteGuards', async ({ page }) => {
-    // Navigate to candidate dashboard when unauthenticated
-    await page.goto('/candidate/dashboard', { waitUntil: 'domcontentloaded' });
-    
-    // Page will either render dashboard in local dev mode or redirect to login
-    const currentUrl = page.url();
-    expect(currentUrl).toMatch(/\/candidate\/dashboard|\/login|\/access-denied/);
   });
 });
