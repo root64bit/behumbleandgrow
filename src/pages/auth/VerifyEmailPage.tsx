@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
-import { MailCheck, CheckCircle2, RefreshCw, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
+import { MailCheck, CheckCircle2, RefreshCw, ArrowRight, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
 import AuthHeader from '../../components/auth/AuthHeader';
 import { supabase } from '../../lib/supabase/client';
 
@@ -13,6 +13,7 @@ export default function VerifyEmailPage() {
 
   const [countdown, setCountdown] = useState(0);
   const [isResending, setIsResending] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [isVerified, setIsVerified] = useState(false);
@@ -24,6 +25,40 @@ export default function VerifyEmailPage() {
     }
     return () => clearInterval(timer);
   }, [countdown, isVerified]);
+
+  // Check if session is already confirmed on mount
+  useEffect(() => {
+    async function checkInitialVerification() {
+      const { data } = await supabase.auth.getUser();
+      if (data?.user?.email_confirmed_at) {
+        setIsVerified(true);
+      }
+    }
+    checkInitialVerification();
+  }, []);
+
+  const handleCheckVerification = async () => {
+    setIsChecking(true);
+    setErrorMessage('');
+
+    try {
+      // 1. Refresh Auth Session from Supabase
+      const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+      const { data: userData } = await supabase.auth.getUser();
+
+      const user = refreshData?.session?.user || userData?.user;
+
+      if (user?.email_confirmed_at) {
+        setIsVerified(true);
+      } else {
+        setErrorMessage('Verification incomplete: Your email address has not been confirmed yet. Please open the link in your email or click Resend.');
+      }
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Failed to verify email status.');
+    } finally {
+      setIsChecking(false);
+    }
+  };
 
   const handleResend = async () => {
     if (countdown > 0 || isResending || !userEmail) return;
@@ -45,7 +80,11 @@ export default function VerifyEmailPage() {
 
       if (error) {
         console.warn('Resend verification email error:', error.message);
-        setErrorMessage(error.message);
+        if (error.message.includes('rate limit') || error.status === 429) {
+          setErrorMessage('Email send rate limit reached. Please wait a few minutes before requesting another email.');
+        } else {
+          setErrorMessage(error.message);
+        }
         return;
       }
 
@@ -57,10 +96,6 @@ export default function VerifyEmailPage() {
     } finally {
       setIsResending(false);
     }
-  };
-
-  const handleProceedToDashboard = () => {
-    setIsVerified(true);
   };
 
   return (
@@ -79,7 +114,7 @@ export default function VerifyEmailPage() {
             </h1>
             
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              We sent a verification email to <span className="font-bold text-slate-900">{maskedEmail}</span>. Please open the email and follow the activation link to confirm your candidate account.
+              We sent a verification email to <span className="font-bold text-slate-900">{maskedEmail}</span>. Please open the email and click the confirmation link.
             </p>
           </div>
 
@@ -99,11 +134,21 @@ export default function VerifyEmailPage() {
           {/* Verification Actions */}
           <div className="space-y-3 pt-2">
             <button
-              onClick={handleProceedToDashboard}
-              className="btn btn-primary w-full py-3.5 text-base shadow-md"
+              onClick={handleCheckVerification}
+              disabled={isChecking}
+              className="btn btn-primary w-full py-3.5 text-base shadow-md disabled:opacity-50"
             >
-              <span>I've Verified My Email — Continue</span>
-              <ArrowRight className="w-4 h-4 ml-1" />
+              {isChecking ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Checking Verification Status...</span>
+                </>
+              ) : (
+                <>
+                  <span>I've Verified My Email — Continue</span>
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </>
+              )}
             </button>
 
             <button
@@ -120,7 +165,7 @@ export default function VerifyEmailPage() {
 
           {/* Help Links */}
           <div className="pt-4 border-t border-slate-100 text-xs text-slate-500 text-left space-y-1">
-            <p>Didn't receive the email? Check your spam folder or wait 1 minute before resending.</p>
+            <p>Didn't receive the email? Check your spam folder or click Resend above.</p>
             <p>Need to update your email? <Link to="/register" className="text-emerald-700 font-bold hover:underline">Re-register with correct address</Link>.</p>
           </div>
         </>
@@ -136,10 +181,10 @@ export default function VerifyEmailPage() {
               Account Active
             </span>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Your email is verified
+              Your email is verified!
             </h1>
             <p className="text-xs sm:text-sm text-slate-600">
-              Your candidate account is now active. Continue with the preliminary eligibility assessment to start exploring UAE opportunities.
+              Your candidate account is active. Continue with the preliminary eligibility assessment or view your dashboard.
             </p>
           </div>
 
