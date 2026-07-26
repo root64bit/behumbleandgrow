@@ -251,7 +251,10 @@ export class CandidatePlacementService {
       let status: PlacementRoadmapStage['status'] = 'pending';
 
       if (match) {
-        status = match.status;
+        if (match.status === 'completed') status = 'completed';
+        else if (match.status === 'in_progress') status = 'current';
+        else if (match.status === 'not_applicable') status = 'not_applicable';
+        else status = 'pending';
       } else if (canonical.stepNumber < placement.relocationStage) {
         status = 'completed';
       } else if (canonical.stepNumber === placement.relocationStage) {
