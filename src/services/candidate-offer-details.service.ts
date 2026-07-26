@@ -142,8 +142,8 @@ export async function loadMyOfferDetails(
 
     if (!row) {
       const isDemoEnabled = import.meta.env.DEV && import.meta.env.VITE_DEMO_DATA_ENABLED === 'true';
-      if (isDemoEnabled && userId === 'cand-user-1' && DEMO_OFFER_DETAILS[offerId]) {
-        return DEMO_OFFER_DETAILS[offerId];
+      if (isDemoEnabled) {
+        return DEMO_OFFER_DETAILS[offerId] || (offerId.startsWith('ofr-') ? { ...DEMO_OFFER_DETAILS['ofr-demo-1'], id: offerId } : null);
       }
       return null;
     }
@@ -191,8 +191,8 @@ export async function loadMyOfferDetails(
     };
   } catch (err) {
     const isDemoEnabled = import.meta.env.DEV && import.meta.env.VITE_DEMO_DATA_ENABLED === 'true';
-    if (isDemoEnabled && DEMO_OFFER_DETAILS[offerId]) {
-      return DEMO_OFFER_DETAILS[offerId];
+    if (isDemoEnabled) {
+      return DEMO_OFFER_DETAILS[offerId] || (offerId.startsWith('ofr-') ? { ...DEMO_OFFER_DETAILS['ofr-demo-1'], id: offerId } : null);
     }
     return null;
   }
