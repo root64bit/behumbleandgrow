@@ -116,18 +116,27 @@ test.describe('Be Humble & Grow — Candidate Placement & Relocation E2E Suite',
     });
 
     await page.route('**/rest/v1/profiles*', async (route) => {
+      const acceptHeader = route.request().headers()['accept'] || '';
+      const profileData = {
+        id: 'usr-cand-101',
+        email: 'alex.candidate@example.com',
+        full_name: 'Alex Johnson',
+        country_code: 'AE',
+        status: 'active',
+      };
+
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([
-          {
-            id: 'usr-cand-101',
-            email: 'alex.candidate@example.com',
-            full_name: 'Alex Johnson',
-            country_code: 'AE',
-            status: 'active',
-          },
-        ]),
+        body: acceptHeader.includes('vnd.pgrst.object') ? JSON.stringify(profileData) : JSON.stringify([profileData]),
+      });
+    });
+
+    await page.route('**/rest/v1/user_roles*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{ role: 'candidate', profile_id: 'usr-cand-101' }]),
       });
     });
 
