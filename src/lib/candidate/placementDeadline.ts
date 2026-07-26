@@ -31,7 +31,9 @@ export function resolveDeadlineDisplay(deadlineIso?: string | null, now: Date = 
   const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'short', year: 'numeric' };
   const formattedDate = deadlineDate.toLocaleDateString('en-GB', options);
 
-  if (diffMs < 0) {
+  const isSameDay = deadlineDate.toDateString() === now.toDateString();
+
+  if (diffMs < 0 && !isSameDay) {
     return {
       label: 'Overdue',
       isOverdue: true,
@@ -40,7 +42,7 @@ export function resolveDeadlineDisplay(deadlineIso?: string | null, now: Date = 
     };
   }
 
-  if (diffDays === 0) {
+  if (isSameDay || diffDays <= 0) {
     return {
       label: 'Due today',
       isOverdue: false,

@@ -58,6 +58,7 @@ const CandidateInterviewDetailsPage = lazy(() => import('../pages/candidate/Cand
 const CandidateOffersPage = lazy(() => import('../pages/candidate/CandidateOffersPage'));
 const CandidateOfferDetailsPage = lazy(() => import('../pages/candidate/CandidateOfferDetailsPage'));
 const CandidatePlacementPage = lazy(() => import('../pages/candidate/CandidatePlacementPage'));
+const CandidateNotificationsPage = lazy(() => import('../pages/candidate/CandidateNotificationsPage'));
 const CandidateSupportPage = lazy(() => import('../pages/candidate/CandidateSupportPage'));
 const CandidateSettingsPage = lazy(() => import('../pages/candidate/CandidateSettingsPage'));
 
@@ -203,6 +204,7 @@ export const router = createBrowserRouter([
       { path: 'offers', element: <Lazy component={CandidateOffersPage} /> },
       { path: 'offers/:offerId', element: <Lazy component={CandidateOfferDetailsPage} /> },
       { path: 'placement', element: <Lazy component={CandidatePlacementPage} /> },
+      { path: 'notifications', element: <Lazy component={CandidateNotificationsPage} /> },
       { path: 'support', element: <Lazy component={CandidateSupportPage} /> },
       { path: 'settings', element: <Lazy component={CandidateSettingsPage} /> },
     ],

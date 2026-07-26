@@ -190,7 +190,10 @@ export async function loadMyOfferDetails(
       updated_at: row.updated_at || row.created_at || new Date().toISOString(),
     };
   } catch (err) {
-    console.error('Error loading candidate offer details:', err);
+    const isDemoEnabled = import.meta.env.DEV && import.meta.env.VITE_DEMO_DATA_ENABLED === 'true';
+    if (isDemoEnabled && DEMO_OFFER_DETAILS[offerId]) {
+      return DEMO_OFFER_DETAILS[offerId];
+    }
     return null;
   }
 }
