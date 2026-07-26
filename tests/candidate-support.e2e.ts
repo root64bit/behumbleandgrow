@@ -287,7 +287,7 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
   });
 
   test('1. Render Support Centre header, bento metrics, FAQs, and ticket cards', async ({ page }) => {
-    await page.goto('/candidate/support');
+    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
 
     await expect(page.locator('h1')).toBeVisible({ timeout: 20000 });
     await expect(page.getByText('Support Centre').first()).toBeVisible({ timeout: 20000 });
@@ -297,7 +297,7 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
   });
 
   test('2. Filter tickets by tab, category, and search query', async ({ page }) => {
-    await page.goto('/candidate/support');
+    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
 
     // Filter Response Required
     await page.getByRole('button', { name: 'Response Required' }).first().click();
@@ -310,7 +310,7 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
   });
 
   test('3. Open Create Support Request modal and validate required fields', async ({ page }) => {
-    await page.goto('/candidate/support');
+    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
 
     await page.getByRole('button', { name: 'Create Support Request' }).first().click();
     await expect(page.getByText('Create Support Request').first()).toBeVisible({ timeout: 20000 });
@@ -325,7 +325,7 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
   });
 
   test('4. Successfully create a new candidate support request', async ({ page }) => {
-    await page.goto('/candidate/support');
+    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
 
     await page.getByRole('button', { name: 'Create Support Request' }).first().click();
     await expect(page.getByText('Create Support Request').first()).toBeVisible({ timeout: 20000 });
@@ -337,7 +337,7 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
   });
 
   test('5. Open owned ticket details, view conversation, and submit reply', async ({ page }) => {
-    await page.goto('/candidate/support');
+    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
 
     const viewBtn = page.getByRole('button', { name: 'View Request' }).first();
     await expect(viewBtn).toBeVisible({ timeout: 20000 });
@@ -364,14 +364,14 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
       });
     });
 
-    await page.goto('/candidate/support');
+    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
 
     await expect(page.getByText('You have no support requests yet').first()).toBeVisible({ timeout: 20000 });
   });
 
   test('7. Mobile viewport layout responsiveness', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/candidate/support');
+    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
 
     await expect(page.getByText('Support Centre').first()).toBeVisible({ timeout: 20000 });
     await expect(page.getByText('BHG-SUP-2026-001284').first()).toBeVisible({ timeout: 20000 });
