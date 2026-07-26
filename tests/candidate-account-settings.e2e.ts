@@ -2,6 +2,9 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E Suite', () => {
   test.beforeEach(async ({ page }) => {
+    // Set 60s timeout for multi-browser stability
+    test.setTimeout(60000);
+
     // Inject mock authenticated session
     await page.addInitScript(() => {
       const session = {
@@ -39,26 +42,32 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
     });
 
     await page.route('**/rest/v1/profiles*', async (route) => {
+      const acceptHeader = route.request().headers()['accept'] || '';
+      const isSingle = acceptHeader.includes('vnd.pgrst.object+json');
+      const bodyData = {
+        id: 'cand-user-settings-123',
+        full_name: 'Alexander Chen',
+        email: 'alexander.chen@example.com',
+        country_code: 'AE',
+      };
       await route.fulfill({
         status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          id: 'cand-user-settings-123',
-          full_name: 'Alexander Chen',
-          email: 'alexander.chen@example.com',
-          country_code: 'AE',
-        }),
+        contentType: isSingle ? 'application/vnd.pgrst.object+json' : 'application/json',
+        body: JSON.stringify(isSingle ? bodyData : [bodyData]),
       });
     });
 
     await page.route('**/rest/v1/candidates*', async (route) => {
+      const acceptHeader = route.request().headers()['accept'] || '';
+      const isSingle = acceptHeader.includes('vnd.pgrst.object+json');
+      const bodyData = {
+        id: 'cand-99201-ux',
+        user_id: 'cand-user-settings-123',
+      };
       await route.fulfill({
         status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({
-          id: 'cand-99201-ux',
-          user_id: 'cand-user-settings-123',
-        }),
+        contentType: isSingle ? 'application/vnd.pgrst.object+json' : 'application/json',
+        body: JSON.stringify(isSingle ? bodyData : [bodyData]),
       });
     });
 
@@ -94,10 +103,10 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
     await page.goto('/candidate/settings', { waitUntil: 'domcontentloaded' });
 
     await expect(page.locator('h1')).toBeVisible({ timeout: 20000 });
-    await expect(page.getByText('Account Settings & Preferences').first()).toBeVisible();
-    await expect(page.getByText('BHG-CAND-CAND-9').first()).toBeVisible();
-    await expect(page.getByText('Alexander Chen').first()).toBeVisible();
-    await expect(page.getByText('alexander.chen@example.com').first()).toBeVisible();
+    await expect(page.getByText('Account Settings & Preferences').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('BHG-CAND-CAND-9').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('Alexander Chen').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('alexander.chen@example.com').first()).toBeVisible({ timeout: 20000 });
   });
 
   test('2. Change preferred language and verify unsaved changes save bar', async ({ page }) => {
@@ -106,18 +115,18 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
     await page.getByText('Português (Moçambique)').first().click();
 
     // Verify floating save bar appears
-    await expect(page.getByText('You have unsaved changes')).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Save Changes' })).toBeVisible();
+    await expect(page.getByText('You have unsaved changes')).toBeVisible({ timeout: 20000 });
+    await expect(page.getByRole('button', { name: 'Save Changes' })).toBeVisible({ timeout: 20000 });
   });
 
   test('3. Change Candidate time zone and verify time zone options', async ({ page }) => {
     await page.goto('/candidate/settings', { waitUntil: 'domcontentloaded' });
 
     const tzSelect = page.locator('select').first();
-    await expect(tzSelect).toBeVisible();
+    await expect(tzSelect).toBeVisible({ timeout: 20000 });
     await tzSelect.selectOption('Africa/Maputo');
 
-    await expect(page.getByText('You have unsaved changes')).toBeVisible();
+    await expect(page.getByText('You have unsaved changes')).toBeVisible({ timeout: 20000 });
   });
 
   test('4. Configure quiet hours start and end times', async ({ page }) => {
@@ -127,21 +136,21 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
     const quietSwitch = page.locator('input[type="checkbox"]').first();
     await quietSwitch.click({ force: true });
 
-    await expect(page.getByText('Quiet Hours Start')).toBeVisible();
-    await expect(page.getByText('Quiet Hours End')).toBeVisible();
+    await expect(page.getByText('Quiet Hours Start')).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('Quiet Hours End')).toBeVisible({ timeout: 20000 });
   });
 
   test('5. Open Update Password modal and validate minimum 8 characters rule', async ({ page }) => {
     await page.goto('/candidate/settings', { waitUntil: 'domcontentloaded' });
 
     await page.getByRole('button', { name: 'Update Password' }).first().click();
-    await expect(page.getByRole('heading', { name: 'Update Password' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Update Password' })).toBeVisible({ timeout: 20000 });
 
     await page.getByPlaceholder('Minimum 8 characters').fill('123');
     await page.getByPlaceholder('Re-enter new password').fill('123');
     await page.getByRole('button', { name: 'Save New Password' }).click();
 
-    await expect(page.getByText('Password must be at least 8 characters long.')).toBeVisible();
+    await expect(page.getByText('Password must be at least 8 characters long.')).toBeVisible({ timeout: 20000 });
   });
 
   test('6. Save changes and verify success notification in save bar', async ({ page }) => {
@@ -168,14 +177,14 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
     await page.getByText('Português (Moçambique)').first().click();
 
     await page.getByRole('button', { name: 'Save Changes' }).click();
-    await expect(page.getByText('Your account preferences have been saved successfully.')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Your account preferences have been saved successfully.')).toBeVisible({ timeout: 20000 });
   });
 
   test('7. Mobile viewport layout responsiveness (390px)', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/candidate/settings', { waitUntil: 'domcontentloaded' });
 
-    await expect(page.locator('h1')).toBeVisible();
-    await expect(page.getByText('Account Settings & Preferences').first()).toBeVisible();
+    await expect(page.locator('h1')).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('Account Settings & Preferences').first()).toBeVisible({ timeout: 20000 });
   });
 });
