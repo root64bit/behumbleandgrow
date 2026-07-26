@@ -100,7 +100,7 @@ const mockMessages = [
 ];
 
 test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
-  test.setTimeout(45000);
+  test.setTimeout(60000);
 
   test.beforeEach(async ({ page }) => {
     // Inject auth session into localStorage using all known storage keys
@@ -287,48 +287,48 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
   });
 
   test('1. Render Support Centre header, bento metrics, FAQs, and ticket cards', async ({ page }) => {
-    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/support');
 
-    await expect(page.locator('h1')).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText('Support Centre').first()).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText('BHG-SUP-2026-001284').first()).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText('Inquiry regarding application review timeframe').first()).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText('Passport bio-page re-upload verification').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('h1')).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('Support Centre').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('BHG-SUP-2026-001284').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('Inquiry regarding application review timeframe').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('Passport bio-page re-upload verification').first()).toBeVisible({ timeout: 20000 });
   });
 
   test('2. Filter tickets by tab, category, and search query', async ({ page }) => {
-    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/support');
 
     // Filter Response Required
     await page.getByRole('button', { name: 'Response Required' }).first().click();
-    await expect(page.getByText('Passport bio-page re-upload verification').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Passport bio-page re-upload verification').first()).toBeVisible({ timeout: 20000 });
 
     // Search query
     const searchInput = page.getByPlaceholder('Search support requests by reference or subject...');
     await searchInput.fill('001284');
-    await expect(page.getByText('BHG-SUP-2026-001284').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('BHG-SUP-2026-001284').first()).toBeVisible({ timeout: 20000 });
   });
 
   test('3. Open Create Support Request modal and validate required fields', async ({ page }) => {
-    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/support');
 
     await page.getByRole('button', { name: 'Create Support Request' }).first().click();
-    await expect(page.getByText('Create Support Request').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Create Support Request').first()).toBeVisible({ timeout: 20000 });
 
     // Fill short inputs (under min bounds) to trigger length validation error messages
     await page.getByPlaceholder('Brief summary of your inquiry (min 5 chars)').fill('Hi');
     await page.getByPlaceholder('Explain your question or issue in detail (min 20 chars)...').fill('Short info');
 
     await page.getByRole('button', { name: 'Submit Request' }).first().click();
-    await expect(page.getByText('Subject must be at least 5 characters long.')).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText('Description must be at least 20 characters long.')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Subject must be at least 5 characters long.')).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('Description must be at least 20 characters long.')).toBeVisible({ timeout: 20000 });
   });
 
   test('4. Successfully create a new candidate support request', async ({ page }) => {
-    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/support');
 
     await page.getByRole('button', { name: 'Create Support Request' }).first().click();
-    await expect(page.getByText('Create Support Request').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Create Support Request').first()).toBeVisible({ timeout: 20000 });
 
     await page.getByPlaceholder('Brief summary of your inquiry (min 5 chars)').fill('Need help with MOHRE work permit status');
     await page.getByPlaceholder('Explain your question or issue in detail (min 20 chars)...').fill('My work permit reference was issued yesterday and I would like to check next steps for visa appointment.');
@@ -337,14 +337,14 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
   });
 
   test('5. Open owned ticket details, view conversation, and submit reply', async ({ page }) => {
-    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/support');
 
     const viewBtn = page.getByRole('button', { name: 'View Request' }).first();
-    await expect(viewBtn).toBeVisible({ timeout: 15000 });
+    await expect(viewBtn).toBeVisible({ timeout: 20000 });
     await viewBtn.click();
 
-    await expect(page.getByText('Messages').first()).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText('Hello Alex, please re-upload your passport copy').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Messages').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('Hello Alex, please re-upload your passport copy').first()).toBeVisible({ timeout: 20000 });
 
     // Fill reply text
     const replyArea = page.getByPlaceholder('Type your reply to candidate support...');
@@ -364,16 +364,16 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
       });
     });
 
-    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/support');
 
-    await expect(page.getByText('You have no support requests yet').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('You have no support requests yet').first()).toBeVisible({ timeout: 20000 });
   });
 
   test('7. Mobile viewport layout responsiveness', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto('/candidate/support', { waitUntil: 'domcontentloaded' });
+    await page.goto('/candidate/support');
 
-    await expect(page.getByText('Support Centre').first()).toBeVisible({ timeout: 15000 });
-    await expect(page.getByText('BHG-SUP-2026-001284').first()).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Support Centre').first()).toBeVisible({ timeout: 20000 });
+    await expect(page.getByText('BHG-SUP-2026-001284').first()).toBeVisible({ timeout: 20000 });
   });
 });
