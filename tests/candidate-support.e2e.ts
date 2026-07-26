@@ -103,8 +103,9 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
   test.setTimeout(45000);
 
   test.beforeEach(async ({ page }) => {
-    // Inject auth session into localStorage
+    // Inject auth session into localStorage using all known storage keys
     await page.addInitScript((session) => {
+      window.localStorage.setItem('bhg_auth_token', JSON.stringify(session));
       window.localStorage.setItem('sb-auth-token', JSON.stringify(session));
       window.localStorage.setItem('sb-localhost-auth-token', JSON.stringify(session));
     }, {
@@ -161,7 +162,20 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
     });
 
     await page.route('**/rest/v1/candidates*', async (route) => {
+      const url = route.request().url();
       const acceptHeader = route.request().headers()['accept'] || '';
+
+      if (url.includes('cand-empty')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: acceptHeader.includes('vnd.pgrst.object')
+            ? JSON.stringify({ id: 'cand-empty', user_id: 'usr-cand-101' })
+            : JSON.stringify([{ id: 'cand-empty', user_id: 'usr-cand-101' }]),
+        });
+        return;
+      }
+
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -172,6 +186,15 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
     await page.route('**/rest/v1/candidate_support_tickets*', async (route) => {
       const acceptHeader = route.request().headers()['accept'] || '';
       const url = route.request().url();
+
+      if (url.includes('cand-empty') || url.includes('candidate_id=eq.cand-empty')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([]),
+        });
+        return;
+      }
 
       if (url.includes('tkt-102')) {
         await route.fulfill({
@@ -315,11 +338,14 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
   });
 
   test('6. Render empty state when candidate has no support tickets', async ({ page }) => {
-    await page.route('**/rest/v1/candidate_support_tickets*', async (route) => {
+    await page.route('**/rest/v1/candidates*', async (route) => {
+      const acceptHeader = route.request().headers()['accept'] || '';
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([]),
+        body: acceptHeader.includes('vnd.pgrst.object')
+          ? JSON.stringify({ id: 'cand-empty', user_id: 'usr-cand-101' })
+          : JSON.stringify([{ id: 'cand-empty', user_id: 'usr-cand-101' }]),
       });
     });
 
