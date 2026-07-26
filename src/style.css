@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   /* 2026 International Recruitment Platform Color System */
   --color-primary-navy: #102A4C;
@@ -23,9 +27,9 @@
   --font-heading: 'Manrope', 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Inter', sans-serif;
 
-  /* Spacing */
-  --container-max-width: 1280px;
-  --header-height: 4.5rem;
+  /* Full-width Stretching Container Spacing */
+  --container-max-width: 100%;
+  --header-height: 5rem;
 }
 
 * {
@@ -51,7 +55,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Glassmorphism & Surface Utilities */
 .glass-header {
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(228, 231, 236, 0.8);
@@ -68,23 +72,36 @@ h1, h2, h3, h4, h5, h6 {
   position: absolute;
   top: -10%;
   right: -5%;
-  width: 35rem;
-  height: 35rem;
+  width: 45rem;
+  height: 45rem;
   background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, rgba(16, 42, 76, 0.04) 50%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }
 
-/* Container */
+/* Full-width Responsive Container */
 .container {
-  max-width: var(--container-max-width);
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 1.25rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .container {
     padding: 0 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 4rem;
+  }
+}
+
+@media (min-width: 1440px) {
+  .container {
+    padding: 0 6rem;
   }
 }
 

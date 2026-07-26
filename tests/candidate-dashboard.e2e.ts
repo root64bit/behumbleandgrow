@@ -1,0 +1,146 @@
+import { test, expect } from '@playwright/test';
+
+const mockCandidateSession = {
+  access_token: 'mock-access-token',
+  refresh_token: 'mock-refresh-token',
+  expires_in: 3600,
+  expires_at: Math.floor(Date.now() / 1000) + 3600,
+  token_type: 'bearer',
+  user: {
+    id: 'cand-user-1',
+    aud: 'authenticated',
+    role: 'authenticated',
+    email: 'candidate@behumbleandgrow.com',
+    email_confirmed_at: '2026-01-01T00:00:00Z',
+    user_metadata: {
+      full_name: 'Amina Mabote'
+    }
+  }
+};
+
+test.describe('Be Humble & Grow — Candidate Dashboard Comprehensive E2E', () => {
+
+  test.beforeEach(async ({ page }) => {
+    // Intercept Supabase Auth & REST endpoints to prevent remote JWT 401 rejection
+    await page.route('**/auth/v1/user', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockCandidateSession.user)
+      });
+    });
+
+    await page.route('**/auth/v1/token*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockCandidateSession)
+      });
+    });
+
+    await page.route('**/rest/v1/profiles*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{
+          id: 'cand-user-1',
+          email: 'candidate@behumbleandgrow.com',
+          full_name: 'Amina Mabote',
+          country_code: 'MZ',
+          status: 'active'
+        }])
+      });
+    });
+
+    await page.route('**/rest/v1/candidates*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{
+          id: 'cand-user-1',
+          headline: 'Customer Experience & Hospitality Lead',
+          profile_completion_percentage: 78,
+          stage: 'employer_interview'
+        }])
+      });
+    });
+
+    await page.route('**/rest/v1/user_roles*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{
+          id: 'ur-1',
+          profile_id: 'cand-user-1',
+          role: 'candidate'
+        }])
+      });
+    });
+
+    // Inject session into localStorage
+    await page.addInitScript((session) => {
+      window.localStorage.setItem('bhg_auth_token', JSON.stringify(session));
+    }, mockCandidateSession);
+  });
+  
+  test('1. Candidate Dashboard loads with Candidate Workspace identity, welcome banner & 10-stage journey', async ({ page }) => {
+    await page.goto('/candidate/dashboard', { waitUntil: 'domcontentloaded' });
+
+    // Verify main header greeting text or candidate identity
+    await expect(page.locator('h1')).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText('Application Journey').first()).toBeVisible({ timeout: 15000 });
+  });
+
+  test('2. Desktop navigation displays sidebar with 10 canonical Candidate items', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/candidate/dashboard', { waitUntil: 'domcontentloaded' });
+
+    // Verify desktop sidebar links
+    const sidebar = page.locator('aside');
+    await expect(sidebar.getByRole('link', { name: 'Dashboard' })).toBeVisible({ timeout: 15000 });
+    await expect(sidebar.getByRole('link', { name: 'My Profile' })).toBeVisible();
+    await expect(sidebar.getByRole('link', { name: 'My Documents' })).toBeVisible();
+    await expect(sidebar.getByRole('link', { name: 'Find Opportunities' })).toBeVisible();
+    await expect(sidebar.getByRole('link', { name: 'My Applications' })).toBeVisible();
+    await expect(sidebar.getByRole('link', { name: 'Video Interviews' })).toBeVisible();
+    await expect(sidebar.getByRole('link', { name: 'Conditional Offers' })).toBeVisible();
+    await expect(sidebar.getByRole('link', { name: 'Mobility Placement' })).toBeVisible();
+    await expect(sidebar.getByRole('link', { name: 'Support Centre' })).toBeVisible();
+    await expect(sidebar.getByRole('link', { name: 'Settings' })).toBeVisible();
+  });
+
+  test('3. Mobile navigation displays bottom navigation bar (390px viewport)', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/candidate/dashboard', { waitUntil: 'domcontentloaded' });
+
+    // Verify bottom navigation bar is visible
+    const bottomNav = page.locator('nav[aria-label="Mobile Bottom Navigation"]');
+    await expect(bottomNav).toBeVisible({ timeout: 15000 });
+    await expect(bottomNav.getByText('Home')).toBeVisible();
+    await expect(bottomNav.getByText('Jobs')).toBeVisible();
+    await expect(bottomNav.getByText('Applications')).toBeVisible();
+    await expect(bottomNav.getByText('Interviews')).toBeVisible();
+    await expect(bottomNav.getByText('Profile')).toBeVisible();
+  });
+
+  test('4. Dashboard card actions link to correct canonical routes', async ({ page }) => {
+    await page.goto('/candidate/dashboard', { waitUntil: 'domcontentloaded' });
+
+    // Profile readiness CTA links to /candidate/profile
+    const profileLink = page.locator('a[href="/candidate/profile"]').first();
+    await expect(profileLink).toBeVisible({ timeout: 15000 });
+
+    // Document status CTA links to /candidate/documents
+    const docLink = page.locator('a[href="/candidate/documents"]').first();
+    await expect(docLink).toBeVisible();
+
+    // Opportunities link targets /candidate/jobs
+    const jobsLink = page.locator('a[href="/candidate/jobs"]').first();
+    await expect(jobsLink).toBeVisible();
+  });
+
+  test('5. Navigation to Candidate Dashboard maintains valid URL target', async ({ page }) => {
+    await page.goto('/candidate/dashboard', { waitUntil: 'domcontentloaded' });
+    expect(page.url()).toContain('/candidate/dashboard');
+  });
+});

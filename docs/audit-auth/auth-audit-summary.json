@@ -1,0 +1,59 @@
+{
+  "project": "Be Humble & Grow",
+  "auditDate": "2026-07-25",
+  "primaryAuthProvider": "Supabase Auth (GoTrue PKCE)",
+  "secondaryAuthProvidersDetected": [],
+  "authenticationReadinessScore": 58.5,
+  "safeLaunchLevel": "Internal Technical Testing",
+  "productionSafe": false,
+  "scores": {
+    "providerConfiguration": 90,
+    "registration": 85,
+    "emailVerification": 75,
+    "loginLogout": 60,
+    "passwordRecovery": 85,
+    "sessionSecurity": 70,
+    "routeProtection": 40,
+    "roleProvisioning": 80,
+    "organisationMembership": 30,
+    "invitationSecurity": 20,
+    "rlsIntegration": 50,
+    "storageAuthentication": 75,
+    "securityLogging": 0,
+    "automatedTesting": 10,
+    "hostedVerification": 0
+  },
+  "counts": {
+    "critical": 4,
+    "high": 2,
+    "medium": 3,
+    "low": 2,
+    "notVerified": 2,
+    "implementedVerified": 8,
+    "notProductionSafe": 4,
+    "broken": 3,
+    "missing": 2
+  },
+  "criticalBlockers": [
+    "BLK-AUTH-01: Development preview bypass in RouteGuards.tsx allows unauthenticated access to admin routes in DEV builds.",
+    "BLK-AUTH-02: Secondary portal logins (Operations, Partner, Employer) use mock setTimeout handlers instead of Supabase Auth.",
+    "BLK-AUTH-03: InviteAcceptancePage.tsx uses hardcoded mock JSON metadata rather than validating tokens against public.invitations.",
+    "BLK-AUTH-04: Automated unit tests check client-side JS objects instead of testing live PostgreSQL RLS policies."
+  ],
+  "highBlockers": [
+    "BLK-AUTH-05: Super Admin and Operations Admin roles lack TOTP MFA enforcement.",
+    "BLK-AUTH-06: Security events (failed logins, role modifications) are unlogged."
+  ],
+  "resolvedIssues": [
+    "Single authoritative identity provider (Supabase Auth) active.",
+    "PKCE flow enabled with custom storageKey ('bhg_auth_token').",
+    "PostgreSQL trigger (handle_new_user) auto-provisions profile, candidate, and candidate role.",
+    "Password recovery uses non-enumerating generic success messaging.",
+    "Private documents protected via 30-minute signed URLs."
+  ],
+  "nextActions": [
+    "Remove import.meta.env.DEV bypass in RouteGuards.tsx.",
+    "Connect Operations, Partner, and Employer login pages to supabase.auth.signInWithPassword().",
+    "Create public.invitations table and validate single-use high-entropy tokens."
+  ]
+}

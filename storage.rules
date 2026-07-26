@@ -1,0 +1,20 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Private candidate documents vault
+    match /candidate-docs-vault/{candidateId}/{allPaths=**} {
+      allow read: if request.auth != null && (
+        request.auth.uid == candidateId ||
+        request.auth.token.user_roles.hasAny(['verification_officer', 'compliance_officer', 'super_admin'])
+      );
+      allow write: if request.auth != null && request.auth.uid == candidateId
+        && request.resource.size < 10 * 1024 * 1024; // 10MB Limit
+    }
+
+    // Contracts vault
+    match /contracts-vault/{orgId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.token.active_org_id == orgId;
+    }
+  }
+}

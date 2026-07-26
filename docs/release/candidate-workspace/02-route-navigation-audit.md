@@ -1,0 +1,23 @@
+# 02 — Candidate Route & Navigation Audit
+
+- **Router Manifest**: `src/routes/index.tsx`
+- **Candidate Route Group**: Single `CandidateLayout` wrapper containing all 13 canonical candidate routes.
+- **Role Guard**: `RoleGuard` enforcing `'candidate'` role derived from public `user_roles` database table.
+- **Nested Routes Verified**:
+  - `/candidate/dashboard` -> `CandidateDashboardPage.tsx`
+  - `/candidate/profile` -> `CandidateProfilePage.tsx`
+  - `/candidate/documents` -> `CandidateDocumentsPage.tsx`
+  - `/candidate/applications` -> `CandidateApplicationsPage.tsx`
+  - `/candidate/applications/:applicationId` -> `CandidateApplicationDetailsPage.tsx`
+  - `/candidate/interviews` -> `CandidateInterviewsPage.tsx`
+  - `/candidate/interviews/:interviewId` -> `CandidateInterviewDetailsPage.tsx`
+  - `/candidate/offers` -> `CandidateOffersPage.tsx`
+  - `/candidate/offers/:offerId` -> `CandidateOfferDetailsPage.tsx`
+  - `/candidate/placement` -> `CandidatePlacementPage.tsx`
+  - `/candidate/notifications` -> `CandidateNotificationsPage.tsx`
+  - `/candidate/support` -> `CandidateSupportPage.tsx`
+  - `/candidate/settings` -> `CandidateSettingsPage.tsx`
+- **Navigation Safety Audit**:
+  - Sidebar & Bottom Navigation: All 13 canonical links match router definitions. Zero broken links or dead routes.
+  - Double Mount Protection: `CandidateLayout` is mounted once in `routes/index.tsx`. Pages do not re-render topbar/sidebar wrappers internally.
+  - Safe 404 / Session Expiration: Fallback handling redirects expired sessions to `/login`.

@@ -11,6 +11,9 @@ node_modules
 dist
 dist-ssr
 *.local
+.env
+.env.*
+!.env.example
 
 # Raw design source assets
 be-humble-grow-website-assets/
@@ -25,3 +28,12 @@ be-humble-grow-website-assets/
 *.njsproj
 *.sln
 *.sw?
+
+.vercel
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
