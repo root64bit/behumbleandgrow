@@ -149,7 +149,7 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: acceptHeader.includes('vnd.pgrst.object') ? JSON.stringify(profileData) : JSON.stringify([profileData]),
+        body: acceptHeader.toLowerCase().includes('vnd.pgrst.object') ? JSON.stringify(profileData) : JSON.stringify([profileData]),
       });
     });
 
@@ -169,7 +169,7 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: acceptHeader.includes('vnd.pgrst.object')
+          body: acceptHeader.toLowerCase().includes('vnd.pgrst.object')
             ? JSON.stringify({ id: 'cand-empty', user_id: 'usr-cand-101' })
             : JSON.stringify([{ id: 'cand-empty', user_id: 'usr-cand-101' }]),
         });
@@ -179,12 +179,12 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: acceptHeader.includes('vnd.pgrst.object') ? JSON.stringify(mockCandidate) : JSON.stringify([mockCandidate]),
+        body: acceptHeader.toLowerCase().includes('vnd.pgrst.object') ? JSON.stringify(mockCandidate) : JSON.stringify([mockCandidate]),
       });
     });
 
     await page.route('**/rest/v1/candidate_support_tickets*', async (route) => {
-      const acceptHeader = route.request().headers()['accept'] || '';
+      const acceptHeader = (route.request().headers()['accept'] || '').toLowerCase();
       const url = route.request().url();
 
       if (url.includes('cand-empty') || url.includes('candidate_id=eq.cand-empty')) {
@@ -196,11 +196,23 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
         return;
       }
 
-      if (url.includes('tkt-102')) {
+      // Handle single ticket query
+      if (url.includes('id=eq.tkt-102') || url.includes('tkt-102')) {
+        const isSingle = acceptHeader.includes('vnd.pgrst.object') || url.includes('id=eq.');
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: acceptHeader.includes('vnd.pgrst.object') ? JSON.stringify(mockTickets[1]) : JSON.stringify([mockTickets[1]]),
+          body: isSingle ? JSON.stringify(mockTickets[1]) : JSON.stringify([mockTickets[1]]),
+        });
+        return;
+      }
+
+      if (url.includes('id=eq.tkt-101') || url.includes('tkt-101')) {
+        const isSingle = acceptHeader.includes('vnd.pgrst.object') || url.includes('id=eq.');
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: isSingle ? JSON.stringify(mockTickets[0]) : JSON.stringify([mockTickets[0]]),
         });
         return;
       }
@@ -208,7 +220,7 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(mockTickets),
+        body: acceptHeader.includes('vnd.pgrst.object') ? JSON.stringify(mockTickets[0]) : JSON.stringify(mockTickets),
       });
     });
 
@@ -303,7 +315,10 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
     await page.getByRole('button', { name: 'Create Support Request' }).first().click();
     await expect(page.getByText('Create Support Request').first()).toBeVisible({ timeout: 15000 });
 
-    // Submit without subject or description to trigger validation errors
+    // Fill short inputs (under min bounds) to trigger length validation error messages
+    await page.getByPlaceholder('Brief summary of your inquiry (min 5 chars)').fill('Hi');
+    await page.getByPlaceholder('Explain your question or issue in detail (min 20 chars)...').fill('Short info');
+
     await page.getByRole('button', { name: 'Submit Request' }).first().click();
     await expect(page.getByText('Subject must be at least 5 characters long.')).toBeVisible({ timeout: 15000 });
     await expect(page.getByText('Description must be at least 20 characters long.')).toBeVisible({ timeout: 15000 });
@@ -339,7 +354,7 @@ test.describe('Be Humble & Grow — Candidate Support Centre E2E Suite', () => {
 
   test('6. Render empty state when candidate has no support tickets', async ({ page }) => {
     await page.route('**/rest/v1/candidates*', async (route) => {
-      const acceptHeader = route.request().headers()['accept'] || '';
+      const acceptHeader = (route.request().headers()['accept'] || '').toLowerCase();
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
