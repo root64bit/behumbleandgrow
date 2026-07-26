@@ -2,7 +2,6 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E Suite', () => {
   test.beforeEach(async ({ page }) => {
-    // Set 60s timeout for multi-browser stability
     test.setTimeout(60000);
 
     // Inject mock authenticated session
@@ -31,7 +30,7 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
     await page.route('**/auth/v1/user', async (route) => {
       await route.fulfill({
         status: 200,
-        contentType: 'application/json',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           id: 'cand-user-settings-123',
           email: 'alexander.chen@example.com',
@@ -52,7 +51,7 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
       };
       await route.fulfill({
         status: 200,
-        contentType: isSingle ? 'application/vnd.pgrst.object+json' : 'application/json',
+        headers: { 'content-type': isSingle ? 'application/vnd.pgrst.object+json' : 'application/json' },
         body: JSON.stringify(isSingle ? bodyData : [bodyData]),
       });
     });
@@ -66,15 +65,15 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
       };
       await route.fulfill({
         status: 200,
-        contentType: isSingle ? 'application/vnd.pgrst.object+json' : 'application/json',
+        headers: { 'content-type': isSingle ? 'application/vnd.pgrst.object+json' : 'application/json' },
         body: JSON.stringify(isSingle ? bodyData : [bodyData]),
       });
     });
 
-    await page.route('**/rest/v1/rpc/load_my_candidate_account_settings', async (route) => {
+    await page.route('**/rest/v1/rpc/load_my_candidate_account_settings*', async (route) => {
       await route.fulfill({
         status: 200,
-        contentType: 'application/json',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           preferences: {
             id: 'pref-1',
@@ -154,10 +153,10 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
   });
 
   test('6. Save changes and verify success notification in save bar', async ({ page }) => {
-    await page.route('**/rest/v1/rpc/update_my_candidate_preferences', async (route) => {
+    await page.route('**/rest/v1/rpc/update_my_candidate_preferences*', async (route) => {
       await route.fulfill({
         status: 200,
-        contentType: 'application/json',
+        headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           id: 'pref-1',
           candidate_id: 'cand-99201-ux',
