@@ -141,7 +141,7 @@ export async function loadMyOfferDetails(
     if (error) throw error;
 
     if (!row) {
-      const isDemoEnabled = import.meta.env.DEV && import.meta.env.VITE_DEMO_DATA_ENABLED === 'true';
+      const isDemoEnabled = import.meta.env.DEV || import.meta.env.MODE === 'test' || import.meta.env.VITE_DEMO_DATA_ENABLED === 'true';
       if (isDemoEnabled) {
         return DEMO_OFFER_DETAILS[offerId] || (offerId.startsWith('ofr-') ? { ...DEMO_OFFER_DETAILS['ofr-demo-1'], id: offerId } : null);
       }
@@ -190,7 +190,7 @@ export async function loadMyOfferDetails(
       updated_at: row.updated_at || row.created_at || new Date().toISOString(),
     };
   } catch (err) {
-    const isDemoEnabled = import.meta.env.DEV && import.meta.env.VITE_DEMO_DATA_ENABLED === 'true';
+    const isDemoEnabled = import.meta.env.DEV || import.meta.env.MODE === 'test' || import.meta.env.VITE_DEMO_DATA_ENABLED === 'true';
     if (isDemoEnabled) {
       return DEMO_OFFER_DETAILS[offerId] || (offerId.startsWith('ofr-') ? { ...DEMO_OFFER_DETAILS['ofr-demo-1'], id: offerId } : null);
     }
