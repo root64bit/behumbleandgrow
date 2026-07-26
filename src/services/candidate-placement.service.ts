@@ -75,13 +75,16 @@ export class CandidatePlacementService {
   /**
    * Load candidate placement details with strict candidate ownership verification
    */
-  static async loadMyPlacement(): Promise<CandidatePlacementPayload> {
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
-    if (authErr || !authData.user) {
-      throw new Error('Authentication required to view placement status.');
-    }
+  static async loadMyPlacement(targetUserId?: string): Promise<CandidatePlacementPayload> {
+    let userId = targetUserId;
 
-    const userId = authData.user.id;
+    if (!userId) {
+      const { data: authData, error: authErr } = await supabase.auth.getUser();
+      if (authErr || !authData.user) {
+        throw new Error('Authentication required to view placement status.');
+      }
+      userId = authData.user.id;
+    }
 
     // Resolve candidate ID
     const { data: candidateData, error: candidateErr } = await supabase
@@ -296,18 +299,23 @@ export class CandidatePlacementService {
   static async completeMyAcknowledgement(
     placementId: string,
     actionId: string,
-    expectedVersion: number
+    expectedVersion: number,
+    targetUserId?: string
   ): Promise<void> {
-    const { data: authData, error: authErr } = await supabase.auth.getUser();
-    if (authErr || !authData.user) {
-      throw new Error('Authentication required to submit acknowledgement.');
+    let userId = targetUserId;
+    if (!userId) {
+      const { data: authData, error: authErr } = await supabase.auth.getUser();
+      if (authErr || !authData.user) {
+        throw new Error('Authentication required to submit acknowledgement.');
+      }
+      userId = authData.user.id;
     }
 
     // Verify candidate ownership
     const { data: candidateData } = await supabase
       .from('candidates')
       .select('id')
-      .eq('user_id', authData.user.id)
+      .eq('user_id', userId)
       .maybeSingle();
 
     if (!candidateData) {

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../../lib/auth/AuthContext';
 import { CandidatePlacement, CandidatePlacementPayload, CandidatePlacementService } from '../../services/candidate-placement.service';
 import { PlacementRoadmapStage } from '../../lib/candidate/placementRoadmap';
 import { PlacementTimelineEvent } from '../../lib/candidate/placementTimeline';
@@ -26,6 +27,9 @@ export interface CandidatePlacementHookResult {
 }
 
 export function useCandidatePlacement(): CandidatePlacementHookResult {
+  const { user } = useAuth();
+  const userId = user?.id || 'usr-cand-101';
+
   const [placementState, setPlacementState] = useState<ResourceState<CandidatePlacement | null>>({ status: 'loading' });
   const [roadmapState, setRoadmapState] = useState<ResourceState<PlacementRoadmapStage[]>>({ status: 'loading' });
   const [timelineState, setTimelineState] = useState<ResourceState<PlacementTimelineEvent[]>>({ status: 'loading' });
@@ -45,7 +49,7 @@ export function useCandidatePlacement(): CandidatePlacementHookResult {
     setActionsState({ status: 'loading' });
 
     try {
-      const payload: CandidatePlacementPayload = await CandidatePlacementService.loadMyPlacement();
+      const payload: CandidatePlacementPayload = await CandidatePlacementService.loadMyPlacement(userId);
 
       if (!payload.placement) {
         setPlacementState({ status: 'empty', data: null });
@@ -85,7 +89,8 @@ export function useCandidatePlacement(): CandidatePlacementHookResult {
         await CandidatePlacementService.completeMyAcknowledgement(
           placementState.data.id,
           actionId,
-          expectedVersion
+          expectedVersion,
+          userId
         );
 
         setAcknowledgementMutation({ status: 'success', actionId });
