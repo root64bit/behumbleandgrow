@@ -1,15 +1,18 @@
 # 06 — PostgreSQL Row Level Security (RLS) Test Matrix
 
-| Resource / Action | Candidate A (Owner) | Candidate B (Unowned) | Wrong Role (Employer/Recruiter) | Anonymous | Verification Mode | Result |
-|---|---:|---:|---:|---:|---|---|
-| Read Profile | Allowed | Denied | Denied | Denied | Mocked & SQL Schema | PASS |
-| Read Applications | Allowed | Denied | Role Scoped | Denied | Mocked & SQL Schema | PASS |
-| Read Interviews | Allowed | Denied | Role Scoped | Denied | Mocked & SQL Schema | PASS |
-| Read Offers | Allowed | Denied | Role Scoped | Denied | Mocked & SQL Schema | PASS |
-| Read Placement | Allowed | Denied | Role Scoped | Denied | Mocked & SQL Schema | PASS |
-| Read Notifications | Allowed | Denied | Denied | Denied | Mocked & SQL Schema | PASS |
-| Read Support Tickets | Allowed | Denied | Denied | Denied | Mocked & SQL Schema | PASS |
-| Direct Table INSERT/UPDATE | Denied (Revoked) | Denied | Denied | Denied | SQL Grants | PASS |
-| RPC Mutations | Allowed (Owned) | Denied | Denied | Denied | RPC Guard | PASS |
+| Resource / Action | Mocked Frontend Test | SQL Policy Review | Local Supabase DB | Hosted Staging DB | Final Matrix Result |
+|---|---:|---:|---:|---:|---|
+| Candidate Profile Read (`auth.uid() = profiles.id`) | PASS | PASS | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
+| Candidate Documents Read (`candidate_id = own`) | PASS | PASS | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
+| Applications Read (`candidate_id = own`) | PASS | PASS | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
+| Interviews Read (`application_id -> own`) | PASS | PASS | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
+| Conditional Offers Read (`application_id -> own`) | PASS | PASS | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
+| Candidate Placement Read (`candidate_id = own`) | PASS | PASS | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
+| Notifications Read (`candidate_id = own`) | PASS | PASS | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
+| Support Tickets Read (`candidate_id = own`) | PASS | PASS | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
+| Preferences Read (`candidate_id = own`) | PASS | PASS | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
+| Unowned Candidate B Resource Denial | PASS | PASS | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
+| Direct Table INSERT/UPDATE (authenticated role) | Denied (Client) | Denied (Revoked) | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
+| Anonymous User Resource Denial | PASS | PASS | NOT RUN | NOT RUN | PASS (Frontend) / REQUIRES LIVE PROOF |
 
-*Verification Disclaimer*: Frontend tests use mocked Supabase responses. Database RLS rules, foreign keys, and SQL policies are defined in `supabase/migrations/` and require live Supabase deployment for production execution proof.
+*Audit Clarification*: Frontend E2E test suites mock network responses using Playwright `page.route()`. SQL Row Level Security policies, table grants, and SECURITY DEFINER execution restrictions are defined in `supabase/migrations/` and require live Supabase deployment testing before public production launch.

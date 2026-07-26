@@ -1,14 +1,14 @@
 # 09 — Private Storage Security Audit
 
-| Bucket | Public Access | Ownership Enforcement | Upload Intent Scoped | Signed URL TTL | Live Tested |
-|---|---:|---|---:|---|---:|
-| `candidate-cv` | Private | `auth.uid()` -> Candidate | Yes | 15 Minutes | Mocked |
-| `candidate-identity` | Private | `auth.uid()` -> Candidate | Yes | 15 Minutes | Mocked |
-| `candidate-certificates` | Private | `auth.uid()` -> Candidate | Yes | 15 Minutes | Mocked |
-| `offer-documents` | Private | `auth.uid()` -> Candidate | Read-only | 15 Minutes | Mocked |
-| `support-attachments` | Private | `auth.uid()` -> Ticket Owner | Yes | 15 Minutes | Mocked |
+| Bucket Name | Bucket Exists | Private Policy (`public = false`) | Candidate A Own Path Access | Candidate B Path Denied | Anonymous Access Denied | Signed URL Expiry | Malware Scanning Status | Live Result |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| `candidate-cv` | Verified | Private | Allowed | Denied | Denied | 15 Minutes | Not Implemented (MIME check only) | Verified (Mocked) / REQUIRES LIVE DEPLOYMENT |
+| `candidate-identity` | Verified | Private | Allowed | Denied | Denied | 15 Minutes | Not Implemented (MIME check only) | Verified (Mocked) / REQUIRES LIVE DEPLOYMENT |
+| `candidate-certificates` | Verified | Private | Allowed | Denied | Denied | 15 Minutes | Not Implemented (MIME check only) | Verified (Mocked) / REQUIRES LIVE DEPLOYMENT |
+| `offer-documents` | Verified | Private | Read-Only | Denied | Denied | 15 Minutes | Not Implemented (Server Generated PDF) | Verified (Mocked) / REQUIRES LIVE DEPLOYMENT |
+| `support-attachments` | Verified | Private | Allowed | Denied | Denied | 15 Minutes | Not Implemented (MIME check only) | Verified (Mocked) / REQUIRES LIVE DEPLOYMENT |
 
-*Storage Security Policies*:
-- All buckets are non-public (`public = false`).
-- Signed URLs are generated server-side with short 15-minute expiration time-to-live (TTL).
-- Signed URLs are never persisted in PostgreSQL database tables or client local storage.
+*Security & Malware Note*:
+- File uploads enforce client-side and service-layer MIME type allowlists (`.pdf`, `.png`, `.jpeg`, `.jpg`) and strict file size limits (5 MB max).
+- Automated server-side malware scanning (e.g. ClamAV / VirusTotal webhook integration) is **Not Implemented** in the current phase and must be integrated prior to public production launch.
+- MIME type checking does NOT constitute malware scanning.

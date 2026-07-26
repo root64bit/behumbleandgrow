@@ -1,11 +1,14 @@
-# 07 — RPC & SECURITY DEFINER Function Audit
+# 07 — Authoritative RPC & Privileged SECURITY DEFINER Function Inventory
 
-| Function Name | Ownership Check | Search Path | Concurrency Protection | Idempotency | Grants / Permissions | Audit Status |
-|---|---|---|---|---|---|---|
-| `load_my_candidate_account_settings` | `auth.uid()` -> Candidate | `pg_catalog, public` | Read-only | N/A | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | PASS |
-| `update_my_candidate_preferences` | `auth.uid()` -> Candidate | `pg_catalog, public` | Optimistic Version Token | Yes | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | PASS |
-| `update_my_candidate_notification_preference` | `auth.uid()` -> Candidate | `pg_catalog, public` | Category Lock Guard | Yes | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | PASS |
-| `create_my_candidate_support_ticket` | `auth.uid()` -> Candidate | `pg_catalog, public` | Internal Rate Guard | Yes | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | PASS |
-| `reply_to_my_candidate_support_ticket` | `auth.uid()` -> Ticket Owner | `pg_catalog, public` | State Lock Guard | Yes | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | PASS |
-| `confirm_candidate_interview_attendance` | `auth.uid()` -> Application Owner | `pg_catalog, public` | Version Token | Yes | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | PASS |
-| `submit_candidate_offer_decision` | `auth.uid()` -> Application Owner | `pg_catalog, public` | State Token & Locks | Yes | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | PASS |
+| Function Name | Target Domain | Ownership Verification | State Allowlist Check | Version Token | Idempotency | search_path | Grants / Revokes | Frontend Test Status | Live Supabase Result |
+|---|---|---|---|---|---|---|---|---|---|
+| `load_my_candidate_account_settings` | Account Settings | `auth.uid()` -> `profiles.id` -> `candidates.id` | Active Candidate | N/A | Yes | `pg_catalog, public` | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | Verified (Mocked) | REQUIRES DEPLOYMENT |
+| `update_my_candidate_preferences` | General Preferences | `auth.uid()` -> `candidates.id` | Active Candidate | Optimistic Token | Yes | `pg_catalog, public` | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | Verified (Mocked) | REQUIRES DEPLOYMENT |
+| `update_my_candidate_notification_preference` | Category Channel Preferences | `auth.uid()` -> `candidates.id` | Mandatory Category Policy Guard | Optimistic Token | Yes | `pg_catalog, public` | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | Verified (Mocked) | REQUIRES DEPLOYMENT |
+| `create_my_candidate_support_ticket` | Support Centre | `auth.uid()` -> `candidates.id` | Rate Guard | N/A | Yes | `pg_catalog, public` | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | Verified (Mocked) | REQUIRES DEPLOYMENT |
+| `reply_to_my_candidate_support_ticket` | Support Centre | `auth.uid()` -> Ticket Owner | Ticket Open / Awaiting Candidate | N/A | Yes | `pg_catalog, public` | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | Verified (Mocked) | REQUIRES DEPLOYMENT |
+| `confirm_candidate_interview_attendance` | Interviews | `auth.uid()` -> Application Owner | Interview Scheduled | Version Token | Yes | `pg_catalog, public` | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | Verified (Mocked) | REQUIRES DEPLOYMENT |
+| `submit_candidate_offer_decision` | Conditional Offers | `auth.uid()` -> Application Owner | Offer Issued / Pending Expiry | State Token & Declarations | Yes | `pg_catalog, public` | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | Verified (Mocked) | REQUIRES DEPLOYMENT |
+| `get_my_candidate_notifications` | Notifications Centre | `auth.uid()` -> `candidates.id` | Active Candidate | N/A | Yes | `pg_catalog, public` | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | Verified (Mocked) | REQUIRES DEPLOYMENT |
+| `mark_my_candidate_notification_read` | Notifications Centre | `auth.uid()` -> Notification Owner | Notification Exists | N/A | Yes | `pg_catalog, public` | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | Verified (Mocked) | REQUIRES DEPLOYMENT |
+| `mark_all_my_candidate_notifications_read` | Notifications Centre | `auth.uid()` -> `candidates.id` | Active Candidate | N/A | Yes | `pg_catalog, public` | `REVOKE FROM PUBLIC; GRANT TO authenticated;` | Verified (Mocked) | REQUIRES DEPLOYMENT |
