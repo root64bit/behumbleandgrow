@@ -2,7 +2,10 @@ import { test, expect } from '@playwright/test';
 
 const mockUser = {
   id: 'usr-cand-101',
+  aud: 'authenticated',
+  role: 'authenticated',
   email: 'alex.candidate@example.com',
+  email_confirmed_at: '2026-01-01T00:00:00Z',
   user_metadata: { full_name: 'Alex Johnson', role: 'candidate' },
 };
 
