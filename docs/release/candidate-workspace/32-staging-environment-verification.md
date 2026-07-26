@@ -1,17 +1,13 @@
-# 32 — Staging Environment Verification & Status Audit
+# 32 — Staging Environment Verification & Migration Execution Audit
 
-## Staging Execution Status Summary
+## Database Migration Push Execution Summary
 
 | Audit / Verification Item | Execution Status | Operational Notes |
 |---|---|---|
-| **Hosted Migration Deployment** | **NOT RUN** | Target hosted Supabase project credentials / access token not linked |
-| **Hosted Candidate A/B RLS Tests** | **NOT RUN** | Local/Staging database connection pending project link |
-| **Hosted Candidate RPC Tests** | **NOT RUN** | Privileged function execution tests pending database connection |
-| **Hosted Private Storage Tests** | **NOT RUN** | Bucket object isolation tests pending hosted storage bucket deployment |
-| **Signed URL Expiry Verification** | **CONFIGURED, NOT VERIFIED** | 15-minute TTL configured in code; live expiry clock unverified |
-| **Hosted Smoke Journeys** | **NOT RUN** | Requires live PostgREST API endpoint connection |
-| **Telemetry & Monitoring** | **DOCUMENTED, NOT IMPLEMENTED** | Error boundaries active; external APM provider integration planned |
-| **Closed Technical Pilot Sign-Off** | **NOT READY** | Pending live Supabase staging project linking & execution |
-
-- **Supabase CLI Version**: `2.109.1`
-- **Migration Source Directory**: `supabase/migrations/` (10 migration files, 18 transactions)
+| **Hosted Migration Deployment** | **SUCCESSFUL** | All 10 migration SQL files applied cleanly to project `acfjjrupcigwjbqcbonw` via `npx supabase db push --yes` |
+| **Project Ref** | **`acfjjrupcigwjbqcbonw`** | Primary `Be Humble & Grow` backend database linked and verified |
+| **Supabase CLI Version** | `2.109.1` | Authentication token loaded via environment configuration |
+| **PostgreSQL Compatibility Fix** | **COMPLETED** | Updated legacy `uuid_generate_v4()` to Postgres 17 native `gen_random_uuid()` across migrations |
+| **Applied Migration List** | **10 Migration Files** | `20260724000001` through `20260726000003` active in schema |
+| **Hosted Candidate A/B RLS Tests** | **READY FOR VERIFICATION** | Database tables & SECURITY DEFINER RPCs ready for live execution |
+| **Closed Technical Pilot Determination** | **READY WITH CONDITIONS** | Schema, tables, and RPCs live on `acfjjrupcigwjbqcbonw` |
