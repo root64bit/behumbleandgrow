@@ -1,11 +1,22 @@
-# 30 — Technical Pilot Rollback Plan
+# 30 — Authoritative Technical Pilot Rollback Plan
 
-- **Frontend Rollback Trigger**: Any P0 data leak, cross-candidate authorization failure, or fatal script error.
-- **Frontend Baseline Target**: Git release commit `daeab6e` on branch `stitch-candidate-account-settings`.
-- **Frontend Rollback Execution**:
-  1. Trigger Vercel / Netlify instant deployment rollback to commit `daeab6e`.
-  2. Clear CDN cache for `/candidate/*` static assets.
-- **Database Rollback Execution**:
-  1. Revert failed migration via `npx supabase db reset` or executing inverse SQL migration script.
-  2. Revoke active session tokens for affected pilot users via Supabase Auth admin API.
-- **Communication Protocol**: Issue immediate notification to pilot candidates explaining maintenance window.
+## Emergency Rollback Procedures (No `supabase db reset` on Shared DB)
+
+> [!CAUTION]
+> **Shared Environment Safety**: `supabase db reset` must **NEVER** be used on a shared staging or production database. Shared environment rollbacks use versioned frontend deployments, feature flags, and targeted migration rollbacks.
+
+### 1. Frontend Web App Instant Rollback
+- **Trigger**: Any P0 cross-candidate data exposure, authorization failure, or fatal client crash.
+- **Rollback Target**: Vercel / Netlify deployment rollback targeting git release baseline commit `daeab6e` on branch `stitch-candidate-account-settings`.
+- **Execution Time Target**: `< 5 minutes`.
+
+### 2. Feature & RPC Revocation
+- **RPC Lockdown**: Execute `REVOKE EXECUTE ON FUNCTION <function_name> FROM authenticated;` for any compromised service.
+- **Feature Flag Shutdown**: Set `VITE_DEMO_DATA_ENABLED=false` and disable affected candidate feature components.
+
+### 3. Database Migration Remediation
+- **Procedure**: Apply targeted down-migration SQL script (`20260726000004_remediate_<feature>.sql`).
+- **Session Revocation**: Execute `supabase.auth.admin.signOut(user_id)` for impacted pilot accounts.
+
+### 4. Storage Lockdown
+- **Procedure**: Set `public.storage.policies` read access to false for impacted buckets (`candidate-cv`, `candidate-identity`, etc.).
