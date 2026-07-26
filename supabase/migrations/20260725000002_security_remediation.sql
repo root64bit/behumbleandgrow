@@ -7,7 +7,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. PUBLIC.INVITATIONS TABLE
 CREATE TABLE IF NOT EXISTS public.invitations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'recruiter',
   organisation_id UUID,
@@ -29,7 +29,7 @@ EXCEPTION WHEN duplicate_object THEN null; END $$;
 
 -- 2. PUBLIC.SECURITY_EVENTS TABLE
 CREATE TABLE IF NOT EXISTS public.security_events (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID,
   event_type TEXT NOT NULL,
   severity TEXT NOT NULL DEFAULT 'info' CHECK (severity IN ('info', 'warning', 'critical')),

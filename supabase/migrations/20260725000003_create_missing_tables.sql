@@ -9,7 +9,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ORGANISATIONS
 -- ==========================================
 CREATE TABLE IF NOT EXISTS public.organisations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   type TEXT NOT NULL DEFAULT 'platform',
   country_code VARCHAR(3) NOT NULL DEFAULT 'AE',
@@ -24,7 +24,7 @@ ALTER TABLE public.organisations ENABLE ROW LEVEL SECURITY;
 -- ORGANISATION_USERS
 -- ==========================================
 CREATE TABLE IF NOT EXISTS public.organisation_users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   organisation_id UUID NOT NULL REFERENCES public.organisations(id) ON DELETE CASCADE,
   role_in_org TEXT NOT NULL,
@@ -38,7 +38,7 @@ ALTER TABLE public.organisation_users ENABLE ROW LEVEL SECURITY;
 -- INVITATIONS
 -- ==========================================
 CREATE TABLE IF NOT EXISTS public.invitations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'recruiter',
   organisation_id UUID,
@@ -55,7 +55,7 @@ ALTER TABLE public.invitations ENABLE ROW LEVEL SECURITY;
 -- SECURITY_EVENTS
 -- ==========================================
 CREATE TABLE IF NOT EXISTS public.security_events (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID,
   event_type TEXT NOT NULL,
   severity TEXT NOT NULL DEFAULT 'info' CHECK (severity IN ('info', 'warning', 'critical')),
@@ -93,7 +93,7 @@ ALTER TABLE public.employers ENABLE ROW LEVEL SECURITY;
 -- LEAD_ASSIGNMENTS
 -- ==========================================
 CREATE TABLE IF NOT EXISTS public.lead_assignments (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   candidate_id UUID NOT NULL REFERENCES public.candidates(id) ON DELETE CASCADE,
   partner_id UUID NOT NULL REFERENCES public.recruitment_partners(id) ON DELETE CASCADE,
   assigned_by UUID NOT NULL REFERENCES public.profiles(id),
@@ -106,7 +106,7 @@ ALTER TABLE public.lead_assignments ENABLE ROW LEVEL SECURITY;
 -- INTERVIEWS
 -- ==========================================
 CREATE TABLE IF NOT EXISTS public.interviews (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   application_id UUID NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
   interviewer_id UUID NOT NULL REFERENCES public.profiles(id),
   scheduled_at TIMESTAMPTZ NOT NULL,
@@ -122,7 +122,7 @@ ALTER TABLE public.interviews ENABLE ROW LEVEL SECURITY;
 -- OFFERS
 -- ==========================================
 CREATE TABLE IF NOT EXISTS public.offers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   application_id UUID NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
   employer_id UUID NOT NULL REFERENCES public.employers(id) ON DELETE CASCADE,
   salary NUMERIC(12,2) NOT NULL,
@@ -137,7 +137,7 @@ ALTER TABLE public.offers ENABLE ROW LEVEL SECURITY;
 -- REFUNDS
 -- ==========================================
 CREATE TABLE IF NOT EXISTS public.refunds (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   payment_id UUID NOT NULL REFERENCES public.payments(id) ON DELETE RESTRICT,
   requested_by UUID NOT NULL REFERENCES public.profiles(id),
   approved_by UUID REFERENCES public.profiles(id),
@@ -153,7 +153,7 @@ ALTER TABLE public.refunds ENABLE ROW LEVEL SECURITY;
 -- STATUS_HISTORY
 -- ==========================================
 CREATE TABLE IF NOT EXISTS public.status_history (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   entity_type TEXT NOT NULL,
   entity_id UUID NOT NULL,
   previous_status TEXT,
@@ -171,7 +171,7 @@ ALTER TABLE public.status_history ENABLE ROW LEVEL SECURITY;
 -- AUDIT_LOGS (Append-only)
 -- ==========================================
 CREATE TABLE IF NOT EXISTS public.audit_logs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   actor_id UUID REFERENCES public.profiles(id),
   actor_role TEXT NOT NULL,
   org_id UUID,

@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 CREATE TABLE IF NOT EXISTS public.organisations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   type org_type_enum NOT NULL,
   country_code VARCHAR(3) NOT NULL DEFAULT 'AE',
@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS public.organisations (
 );
 
 CREATE TABLE IF NOT EXISTS public.organisation_users (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   organisation_id UUID NOT NULL REFERENCES public.organisations(id) ON DELETE CASCADE,
   role_in_org TEXT NOT NULL,
@@ -105,14 +105,14 @@ CREATE TABLE IF NOT EXISTS public.organisation_users (
 -- 3. RBAC & ABAC ENGINE
 -- ==================================================================
 CREATE TABLE IF NOT EXISTS public.roles (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT UNIQUE NOT NULL,
   description TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS public.permissions (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   code TEXT UNIQUE NOT NULL,
   module TEXT NOT NULL,
   action TEXT NOT NULL,
@@ -127,7 +127,7 @@ CREATE TABLE IF NOT EXISTS public.role_permissions (
 );
 
 CREATE TABLE IF NOT EXISTS public.user_roles (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   role_id UUID NOT NULL REFERENCES public.roles(id) ON DELETE CASCADE,
   organisation_id UUID REFERENCES public.organisations(id) ON DELETE CASCADE,
@@ -156,7 +156,7 @@ CREATE TABLE IF NOT EXISTS public.candidates (
 );
 
 CREATE TABLE IF NOT EXISTS public.work_experiences (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   candidate_id UUID NOT NULL REFERENCES public.candidates(id) ON DELETE CASCADE,
   company_name TEXT NOT NULL,
   job_title TEXT NOT NULL,
@@ -169,7 +169,7 @@ CREATE TABLE IF NOT EXISTS public.work_experiences (
 );
 
 CREATE TABLE IF NOT EXISTS public.educations (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   candidate_id UUID NOT NULL REFERENCES public.candidates(id) ON DELETE CASCADE,
   institution TEXT NOT NULL,
   degree TEXT NOT NULL,
@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS public.educations (
 );
 
 CREATE TABLE IF NOT EXISTS public.candidate_documents (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   candidate_id UUID NOT NULL REFERENCES public.candidates(id) ON DELETE CASCADE,
   document_type TEXT NOT NULL, -- candidate-cv, candidate-identity, candidate-certificates
   file_name TEXT NOT NULL,
@@ -196,7 +196,7 @@ CREATE TABLE IF NOT EXISTS public.candidate_documents (
 );
 
 CREATE TABLE IF NOT EXISTS public.upload_intents (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   document_type TEXT NOT NULL,
   file_name TEXT NOT NULL,
@@ -227,7 +227,7 @@ CREATE TABLE IF NOT EXISTS public.employers (
 );
 
 CREATE TABLE IF NOT EXISTS public.jobs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   employer_id UUID NOT NULL REFERENCES public.employers(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   slug TEXT UNIQUE,
@@ -241,7 +241,7 @@ CREATE TABLE IF NOT EXISTS public.jobs (
 );
 
 CREATE TABLE IF NOT EXISTS public.lead_assignments (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   candidate_id UUID NOT NULL REFERENCES public.candidates(id) ON DELETE CASCADE,
   partner_id UUID NOT NULL REFERENCES public.recruitment_partners(id) ON DELETE CASCADE,
   assigned_by UUID NOT NULL REFERENCES public.profiles(id),
@@ -250,7 +250,7 @@ CREATE TABLE IF NOT EXISTS public.lead_assignments (
 );
 
 CREATE TABLE IF NOT EXISTS public.applications (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   job_id UUID NOT NULL REFERENCES public.jobs(id) ON DELETE CASCADE,
   candidate_id UUID NOT NULL REFERENCES public.candidates(id) ON DELETE CASCADE,
   partner_id UUID REFERENCES public.recruitment_partners(id) ON DELETE SET NULL,
@@ -263,7 +263,7 @@ CREATE TABLE IF NOT EXISTS public.applications (
 );
 
 CREATE TABLE IF NOT EXISTS public.interviews (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   application_id UUID NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
   interviewer_id UUID NOT NULL REFERENCES public.profiles(id),
   scheduled_at TIMESTAMPTZ NOT NULL,
@@ -275,7 +275,7 @@ CREATE TABLE IF NOT EXISTS public.interviews (
 );
 
 CREATE TABLE IF NOT EXISTS public.offers (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   application_id UUID NOT NULL REFERENCES public.applications(id) ON DELETE CASCADE,
   employer_id UUID NOT NULL REFERENCES public.employers(id) ON DELETE CASCADE,
   salary NUMERIC(12,2) NOT NULL,
@@ -289,7 +289,7 @@ CREATE TABLE IF NOT EXISTS public.offers (
 -- 6. PAYMENTS & REFUNDS
 -- ==================================================================
 CREATE TABLE IF NOT EXISTS public.payments (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE RESTRICT,
   amount NUMERIC(10,2) NOT NULL,
   currency VARCHAR(3) NOT NULL DEFAULT 'AED',
@@ -301,7 +301,7 @@ CREATE TABLE IF NOT EXISTS public.payments (
 );
 
 CREATE TABLE IF NOT EXISTS public.refunds (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   payment_id UUID NOT NULL REFERENCES public.payments(id) ON DELETE RESTRICT,
   requested_by UUID NOT NULL REFERENCES public.profiles(id),
   approved_by UUID REFERENCES public.profiles(id),
@@ -316,7 +316,7 @@ CREATE TABLE IF NOT EXISTS public.refunds (
 -- 7. APPEND-ONLY STATUS HISTORY
 -- ==================================================================
 CREATE TABLE IF NOT EXISTS public.status_history (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   entity_type TEXT NOT NULL, -- candidate_eligibility, document_review, application, lead_assignment, interview, offer, placement, payment, refund, support_ticket
   entity_id UUID NOT NULL,
   previous_status TEXT,
@@ -333,7 +333,7 @@ CREATE TABLE IF NOT EXISTS public.status_history (
 -- 8. AUDIT LOGS (STRICT APPEND-ONLY)
 -- ==================================================================
 CREATE TABLE IF NOT EXISTS public.audit_logs (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   actor_id UUID REFERENCES public.profiles(id),
   actor_role TEXT NOT NULL,
   org_id UUID REFERENCES public.organisations(id),
