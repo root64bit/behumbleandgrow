@@ -41,36 +41,26 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
     });
 
     await page.route('**/rest/v1/profiles*', async (route) => {
-      const acceptHeader = (route.request().headers()['accept'] || '').toLowerCase();
-      const isSingle = acceptHeader.includes('vnd.pgrst.object');
-      const bodyData = {
-        id: 'cand-user-settings-123',
-        full_name: 'Alexander Chen',
-        email: 'alexander.chen@example.com',
-        country_code: 'AE',
-      };
       await route.fulfill({
         status: 200,
-        headers: {
-          'content-type': isSingle ? 'application/vnd.pgrst.object+json' : 'application/json',
-        },
-        body: isSingle ? JSON.stringify(bodyData) : JSON.stringify([bodyData]),
+        headers: { 'content-type': 'application/vnd.pgrst.object+json' },
+        body: JSON.stringify({
+          id: 'cand-user-settings-123',
+          full_name: 'Alexander Chen',
+          email: 'alexander.chen@example.com',
+          country_code: 'AE',
+        }),
       });
     });
 
     await page.route('**/rest/v1/candidates*', async (route) => {
-      const acceptHeader = (route.request().headers()['accept'] || '').toLowerCase();
-      const isSingle = acceptHeader.includes('vnd.pgrst.object');
-      const bodyData = {
-        id: 'cand-99201-ux',
-        user_id: 'cand-user-settings-123',
-      };
       await route.fulfill({
         status: 200,
-        headers: {
-          'content-type': isSingle ? 'application/vnd.pgrst.object+json' : 'application/json',
-        },
-        body: isSingle ? JSON.stringify(bodyData) : JSON.stringify([bodyData]),
+        headers: { 'content-type': 'application/vnd.pgrst.object+json' },
+        body: JSON.stringify({
+          id: 'cand-99201-ux',
+          user_id: 'cand-user-settings-123',
+        }),
       });
     });
 
