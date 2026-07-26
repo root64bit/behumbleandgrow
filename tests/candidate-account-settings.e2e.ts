@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E Suite', () => {
-  test.beforeEach(async ({ page }) => {
-    test.setTimeout(60000);
+  test.setTimeout(60000);
 
+  test.beforeEach(async ({ page }) => {
     // Inject mock authenticated session
     await page.addInitScript(() => {
       const session = {
@@ -27,7 +27,7 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
     });
 
     // Mock PostgREST & Auth endpoints
-    await page.route('**/auth/v1/user', async (route) => {
+    await page.route('**/auth/v1/user*', async (route) => {
       await route.fulfill({
         status: 200,
         headers: { 'content-type': 'application/json' },
@@ -41,8 +41,8 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
     });
 
     await page.route('**/rest/v1/profiles*', async (route) => {
-      const acceptHeader = route.request().headers()['accept'] || '';
-      const isSingle = acceptHeader.includes('vnd.pgrst.object+json');
+      const acceptHeader = (route.request().headers()['accept'] || '').toLowerCase();
+      const isSingle = acceptHeader.includes('vnd.pgrst.object');
       const bodyData = {
         id: 'cand-user-settings-123',
         full_name: 'Alexander Chen',
@@ -51,22 +51,26 @@ test.describe('Be Humble & Grow — Candidate Account Settings & Preferences E2E
       };
       await route.fulfill({
         status: 200,
-        headers: { 'content-type': isSingle ? 'application/vnd.pgrst.object+json' : 'application/json' },
-        body: JSON.stringify(isSingle ? bodyData : [bodyData]),
+        headers: {
+          'content-type': isSingle ? 'application/vnd.pgrst.object+json' : 'application/json',
+        },
+        body: isSingle ? JSON.stringify(bodyData) : JSON.stringify([bodyData]),
       });
     });
 
     await page.route('**/rest/v1/candidates*', async (route) => {
-      const acceptHeader = route.request().headers()['accept'] || '';
-      const isSingle = acceptHeader.includes('vnd.pgrst.object+json');
+      const acceptHeader = (route.request().headers()['accept'] || '').toLowerCase();
+      const isSingle = acceptHeader.includes('vnd.pgrst.object');
       const bodyData = {
         id: 'cand-99201-ux',
         user_id: 'cand-user-settings-123',
       };
       await route.fulfill({
         status: 200,
-        headers: { 'content-type': isSingle ? 'application/vnd.pgrst.object+json' : 'application/json' },
-        body: JSON.stringify(isSingle ? bodyData : [bodyData]),
+        headers: {
+          'content-type': isSingle ? 'application/vnd.pgrst.object+json' : 'application/json',
+        },
+        body: isSingle ? JSON.stringify(bodyData) : JSON.stringify([bodyData]),
       });
     });
 
