@@ -1,121 +1,168 @@
-import React, { useState } from 'react';
-import { LifeBuoy, MessageSquare, Send, CheckCircle2, Phone, Mail, HelpCircle, FileText } from 'lucide-react';
+import React from 'react';
+import { useCandidateSupport } from '../../hooks/candidate/useCandidateSupport';
+import { CandidateSupportHeader } from '../../components/candidate/support/CandidateSupportHeader';
+import { CandidateSupportSummaryCards } from '../../components/candidate/support/CandidateSupportSummary';
+import { CandidateSupportTabs } from '../../components/candidate/support/CandidateSupportTabs';
+import { CandidateSupportSearch } from '../../components/candidate/support/CandidateSupportSearch';
+import { CandidateSupportFaqSection } from '../../components/candidate/support/CandidateSupportFaqSection';
+import { CandidateSupportTicketCard } from '../../components/candidate/support/CandidateSupportTicketCard';
+import { CandidateSupportCreateDialog } from '../../components/candidate/support/CandidateSupportCreateDialog';
+import { CandidateSupportTicketDetailsModal } from '../../components/candidate/support/CandidateSupportTicketDetailsModal';
+import { CandidateSupportPagination } from '../../components/candidate/support/CandidateSupportPagination';
+import { CandidateSupportSkeleton } from '../../components/candidate/support/CandidateSupportSkeleton';
+import { CandidateSupportEmptyState } from '../../components/candidate/support/CandidateSupportEmptyState';
+import { CandidateSupportNoResults } from '../../components/candidate/support/CandidateSupportNoResults';
+import { CandidateSupportSectionError } from '../../components/candidate/support/CandidateSupportSectionError';
+import { CandidateSupportConflictState } from '../../components/candidate/support/CandidateSupportConflictState';
+import { CandidateSupportErrorState } from '../../components/candidate/support/CandidateSupportErrorState';
 
 export default function CandidateSupportPage() {
-  const [subject, setSubject] = useState('');
-  const [category, setCategory] = useState('verification');
-  const [message, setMessage] = useState('');
-  const [submitted, setSubmitted] = useState(false);
+  const {
+    ticketsState,
+    summaryState,
+    selectedTicket,
+    messagesState,
+    activeTab,
+    activeCategory,
+    searchQuery,
+    pagination,
+    createModal,
+    mutation,
+    setActiveTab,
+    setActiveCategory,
+    setSearchQuery,
+    setSelectedTicketId,
+    openCreateModal,
+    closeCreateModal,
+    refreshSupportData,
+    loadMoreTickets,
+    createTicket,
+    replyToTicket,
+    closeTicket,
+    reopenTicket,
+  } = useCandidateSupport();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
+  // Fatal Error state
+  if (ticketsState.status === 'error') {
+    return (
+      <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        <CandidateSupportErrorState
+          message={ticketsState.message}
+          onRetry={refreshSupportData}
+        />
+      </main>
+    );
+  }
 
-  const faqs = [
-    { q: 'Is there any candidate application or agency fee charged to candidates?', a: 'No. Be Humble & Grow operates strictly in accordance with UAE Ministry of Human Resources & Emiratisation (MOHRE) laws. No candidate fee is charged for recruitment or placement.' },
-    { q: 'How long does the UAE MOHRE Work Permit approval take?', a: 'Standard MOHRE work permit approvals typically take between 5 to 10 business days once submitted by your sponsoring employer.' },
-    { q: 'What documents are mandatory for verification?', a: 'You must upload a valid International Passport (bio page), an updated CV, and relevant educational or professional certificates.' },
-    { q: 'How do I prepare for my employer video interview?', a: 'Ensure you have a quiet environment, stable internet connection, and your original passport ready for identity verification.' },
-  ];
+  // Initial Loading state
+  if (ticketsState.status === 'loading' && summaryState.status === 'loading') {
+    return (
+      <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        <CandidateSupportSkeleton />
+      </main>
+    );
+  }
+
+  const tickets = ticketsState.status === 'success' ? ticketsState.data : [];
+  const summary = summaryState.status === 'success' ? summaryState.data : { openCount: 0, actionRequiredCount: 0, awaitingSupportCount: 0, resolvedCount: 0 };
+  const messages = messagesState.status === 'success' ? messagesState.data : [];
+  const isInboxEmpty = ticketsState.status === 'empty' && activeTab === 'all' && !activeCategory && !searchQuery;
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto text-left">
-      <div>
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-xs font-bold mb-2">
-          <LifeBuoy className="w-3.5 h-3.5 text-emerald-600" />
-          <span>Candidate Support Centre</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          Help & Support Hub
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-600 mt-1">
-          Access candidate guidance, submit support tickets, or contact compliance officers.
-        </p>
+    <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6 text-left">
+      {/* Header */}
+      <CandidateSupportHeader onOpenCreate={openCreateModal} />
+
+      {/* Bento Summary Metrics */}
+      <CandidateSupportSummaryCards summary={summary} />
+
+      {/* FAQ Section */}
+      <CandidateSupportFaqSection />
+
+      {/* Concurrency Conflict Alert */}
+      {mutation.status === 'conflict' && (
+        <CandidateSupportConflictState onRefresh={refreshSupportData} />
+      )}
+
+      {/* Section Mutation Error Notice */}
+      {mutation.status === 'error' && (
+        <CandidateSupportSectionError
+          message={mutation.error}
+          onRetry={refreshSupportData}
+        />
+      )}
+
+      {/* Tabs & Search controls */}
+      <div className="space-y-3 pt-2">
+        <CandidateSupportTabs
+          activeTab={activeTab}
+          onSelectTab={setActiveTab}
+          openCount={summary.openCount}
+          actionRequiredCount={summary.actionRequiredCount}
+        />
+
+        <CandidateSupportSearch
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          activeCategory={activeCategory}
+          onCategoryChange={setActiveCategory}
+        />
       </div>
 
-      {/* FAQs */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
-        <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2">
-          <HelpCircle className="w-4 h-4 text-emerald-600" />
-          <span>Frequently Asked Questions</span>
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {faqs.map((faq, i) => (
-            <div key={i} className="p-4 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1">
-              <h4 className="text-xs font-bold text-slate-900">{faq.q}</h4>
-              <p className="text-xs text-slate-600 leading-relaxed">{faq.a}</p>
-            </div>
+      {/* Genuine Empty State */}
+      {isInboxEmpty ? (
+        <CandidateSupportEmptyState onCreateRequest={openCreateModal} />
+      ) : tickets.length === 0 ? (
+        /* No Filter Matches State */
+        <CandidateSupportNoResults
+          onClearFilters={() => {
+            setActiveTab('all');
+            setActiveCategory(undefined);
+            setSearchQuery('');
+          }}
+        />
+      ) : (
+        /* Support Ticket Cards List */
+        <div className="space-y-3">
+          {tickets.map((t) => (
+            <CandidateSupportTicketCard
+              key={t.id}
+              ticket={t}
+              onSelect={setSelectedTicketId}
+            />
           ))}
+
+          {/* Cursor Pagination */}
+          <CandidateSupportPagination
+            hasMore={pagination.hasMore}
+            isLoadingMore={pagination.isLoadingMore}
+            onLoadMore={loadMoreTickets}
+            error={pagination.error}
+          />
         </div>
-      </div>
+      )}
 
-      {/* Create Support Ticket */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
-        <h3 className="text-sm font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2">
-          <MessageSquare className="w-4 h-4 text-emerald-600" />
-          <span>Submit Support Inquiry Ticket</span>
-        </h3>
+      {/* Create Support Request Dialog */}
+      <CandidateSupportCreateDialog
+        isOpen={createModal.isOpen}
+        onClose={closeCreateModal}
+        onSubmit={createTicket}
+        isSubmitting={createModal.isSubmitting}
+        serverError={createModal.error}
+      />
 
-        {submitted ? (
-          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-bold flex items-center space-x-2">
-            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span>Thank you! Your ticket has been submitted to candidate support. Ticket reference: TK-2026-904.</span>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Inquiry Category</label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900"
-                >
-                  <option value="verification">Document Verification</option>
-                  <option value="interview">Video Interview Attendance</option>
-                  <option value="offer">Conditional Offer Terms</option>
-                  <option value="visa">UAE Visa & Travel</option>
-                  <option value="general">General Candidate Support</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Subject</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Brief summary of your question..."
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Message Details</label>
-              <textarea
-                required
-                rows={4}
-                placeholder="Explain your request or issue..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs text-slate-900"
-              ></textarea>
-            </div>
-
-            <button
-              type="submit"
-              className="py-3 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center space-x-2 transition-all"
-            >
-              <Send className="w-4 h-4" />
-              <span>Submit Ticket to Support</span>
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
+      {/* Ticket Details & Conversation Modal */}
+      <CandidateSupportTicketDetailsModal
+        ticket={selectedTicket}
+        messages={messages}
+        isLoadingMessages={messagesState.status === 'loading'}
+        onClose={() => setSelectedTicketId(null)}
+        onReply={replyToTicket}
+        onCloseTicket={closeTicket}
+        onReopenTicket={reopenTicket}
+        isMutating={mutation.status === 'submitting'}
+        mutationError={mutation.status === 'error' ? mutation.error : undefined}
+      />
+    </main>
   );
 }
