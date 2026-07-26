@@ -83,11 +83,51 @@ test.describe('Be Humble & Grow — Candidate Placement & Relocation E2E Suite',
   test.setTimeout(45000);
 
   test.beforeEach(async ({ page }) => {
-    await page.route('**/auth/v1/user', async (route) => {
+    await page.addInitScript((session) => {
+      window.localStorage.setItem('sb-auth-token', JSON.stringify(session));
+      window.localStorage.setItem('sb-localhost-auth-token', JSON.stringify(session));
+    }, {
+      access_token: 'mock-access-token',
+      refresh_token: 'mock-refresh-token',
+      expires_in: 3600,
+      expires_at: Math.floor(Date.now() / 1000) + 3600,
+      token_type: 'bearer',
+      user: mockUser,
+    });
+
+    await page.route('**/auth/v1/user*', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify(mockUser),
+      });
+    });
+
+    await page.route('**/auth/v1/token*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          access_token: 'mock-access-token',
+          refresh_token: 'mock-refresh-token',
+          user: mockUser,
+        }),
+      });
+    });
+
+    await page.route('**/rest/v1/profiles*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([
+          {
+            id: 'usr-cand-101',
+            email: 'alex.candidate@example.com',
+            full_name: 'Alex Johnson',
+            country_code: 'AE',
+            status: 'active',
+          },
+        ]),
       });
     });
 
